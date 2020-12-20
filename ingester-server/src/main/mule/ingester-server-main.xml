@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="484ad50d-dd1c-4d7c-a996-62b397c25dec" basePath="emp-sapi" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config_In" doc:name="File Config" doc:id="7141f471-c9c9-4591-90fa-2b50be16e9f8" >
+		<file:connection workingDir="/Users/x049709/Documentos/Anypoint Projects/workspace-fr-jda-machine/udemy-examples-layouts/file_processing/file_in" />
+	</file:config>
+	<file:config name="File_Config_Failures" doc:name="File Config" doc:id="0bd464e0-2c23-4cca-88b3-f248601bf396" >
+		<file:connection workingDir="/Users/x049709/Documentos/Anypoint Projects/workspace-fr-jda-machine/udemy-examples-layouts/file_processing/file_failures" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_Ingester_config" doc:name="HTTP Listener config" doc:id="8002393d-853c-4ebf-a85b-5eb19ca0152e" basePath="ingester" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<db:config name="AzureSQLConfig" doc:name="Database Config" doc:id="9219ec95-790a-47bc-8718-0c519dfe009c" >
+		<db:generic-connection url="${database.url}" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="33602c1f-8833-4ff5-b252-d0008a4193c1" file="${env}.yaml" />
+	<flow name="ingester-main-flow" doc:id="53c21ad3-8085-43f2-8f85-98098ea7cdd4" >
+		<http:listener doc:name="Listener" doc:id="9852c75d-bac5-43a5-9551-ee2f552f1eaa" config-ref="HTTP_Listener_Ingester_config" path="main" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4ea28d9a-2f19-4def-99e5-5d9a43565e9d" message='STARTING LOAD....  #["\n"] '/>
+		<set-variable value="#[attributes.queryParams.sourceEntity]" doc:name="Set Variable" doc:id="697d6890-f1a5-4b1e-a9d7-3f145a620d6f" variableName="sourceEntity" />
+		<java:invoke-static doc:name="Load parameter list" doc:id="eecb847d-742c-45fb-9c83-5c0672ce87e9" class="com.ingester.loaders.ParameterLoader" method="LoadParameterList(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">
+			<java:args><![CDATA[#[output application/java
+---
+{
+	sourceTypeIn: attributes.queryParams.sourceType,
+	sourceEntityIn: attributes.queryParams.sourceEntity,
+	targetSysIn: attributes.queryParams.targetSys,
+	targetEntityIn: attributes.queryParams.targetEntity
+}]]]></java:args>
+		</java:invoke-static>
+		<flow-ref doc:name="load-mapping-sheet-flow" doc:id="c1b0ac78-64a1-48c6-80bb-69250571a0c4" name="load-mapping-sheet"/>
+		<flow-ref doc:name="load-reference-data-flow" doc:id="35c4a353-8464-4428-82ea-438540a653bf" name="load-reference-data"/>
+		<flow-ref doc:name="load-incoming-records-flow" doc:id="fe2cc247-e54e-4b02-96f5-a9b64462a3a4" name="load-incoming-data"/>
+		<ee:transform doc:name="Transform Message" doc:id="0746ca50-1f5e-4555-81b2-88abfcd9b3ba" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "success",
+	"code": 200
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="load-mapping-sheet" doc:id="2d5f0b14-d308-4094-a501-415a07ad86bd" >
+		<db:select doc:name="select-mapping-sheet" doc:id="6ffaae11-5225-4009-92f7-8f04d511d353" config-ref="AzureSQLConfig">
+			<db:sql><![CDATA[${database.sql.select.mapping-sheet}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"sourceEntity": vars.sourceEntity
+}]]]></db:input-parameters>
+		</db:select>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="d3ffbd5c-8e05-4ea0-b695-795dfe2c972c" variableName="arrayListMappingSheet" />
+		<ee:transform doc:name="Transform Message" doc:id="e7765102-1462-4503-b6f7-5246da021626">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (mapping_sheet, indexOfmapping_sheet) ->
+{
+	SOURCE_ENTITY: mapping_sheet.SOURCE_ENTITY,
+	SOURCE_COL_NAME: mapping_sheet.SOURCE_COL_NAME,
+	GENERIC_COL_NAME: mapping_sheet.GENERIC_COL_NAME,
+	TARGET_ENTITY: mapping_sheet.TARGET_ENTITY,
+	TARGET_COL_NAME: mapping_sheet.TARGET_COL_NAME
+} as Object {class: "java.lang.String"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<java:invoke-static doc:name="load-JSON-mapping-sheet" doc:id="e7edde0e-dc41-465f-8324-0d538cb3f03b" class="com.ingester.loaders.JSONMappingSheetLoader" method="LoadJSONMappingSheet(java.lang.String)">
+			<java:args><![CDATA[#[{
+	mappingSheet: payload
+}]]]></java:args>
+		</java:invoke-static>
+		<java:invoke-static doc:name="load-ArrayList-mapping-sheet" doc:id="59e698cc-0388-4a01-84c6-ddcec6b429c8" class="com.ingester.loaders.MappingSheetLoader" method="LoadMappingSheet(java.util.ArrayList)">
+			<java:args><![CDATA[#[{
+	referenceDataArrayListIn: vars.arrayListMappingSheet
+}]]]></java:args>
+		</java:invoke-static>
+	</sub-flow>
+	<sub-flow name="load-reference-data" doc:id="8a588923-4ab1-44d2-bdf2-e90dab18149f" >
+		<db:select doc:name="select-reference-data" doc:id="0e443da5-7c9a-4965-a5c8-fb627db2822b" config-ref="AzureSQLConfig">
+			<db:sql><![CDATA[${database.sql.select.ref-data}]]></db:sql>
+		</db:select>
+		<java:invoke-static doc:name="load-reference-data" doc:id="9d80697c-a22a-4899-bc5c-73388b07a40a" class="com.ingester.loaders.ReferenceDataLoader" method="loadReferenceDataArrayList(java.util.ArrayList)">
+			<java:args><![CDATA[#[output application/java
+---
+{
+	referenceDataArrayListIn: payload
+}]]]></java:args>
+		</java:invoke-static>
+	</sub-flow>
+	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
+		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Anypoint Projects/workspace-fr-jda-machine/udemy-examples-layouts/file_processing/file_in/generic_incoming.csv"/>
+		<set-variable value="#[attributes.fileName]" doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
+		<ee:transform doc:name="Transform Message" doc:id="4686289d-73ae-4d33-9ff8-d488c951ae25" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java---
+payload map (generic_in, indexOfGenericIn) ->
+{
+	inField001: generic_in.inField001,
+	inField002: generic_in.inField002,
+	inField003: generic_in.inField003,
+	inField004: generic_in.inField004,
+	inField005: generic_in.inField005,
+	inField006: generic_in.inField006,
+	inField007: generic_in.inField007,
+	inField008: generic_in.inField008,
+	inField009: generic_in.inField009,
+	inField010: generic_in.inField010,
+	inField011: generic_in.inField011,
+	inField012: generic_in.inField012,
+	inField013: generic_in.inField013,
+	inField014: generic_in.inField014,
+	inField015: generic_in.inField015,
+	inField016: generic_in.inField016,
+	inField017: generic_in.inField017,
+	inField018: generic_in.inField018,
+	inField019: generic_in.inField019,
+	inField020: generic_in.inField020,
+	inField021: generic_in.inField021,
+	inField022: generic_in.inField022,
+	inField023: generic_in.inField023,
+	inField024: generic_in.inField024,
+	inField025: generic_in.inField025,
+	inField026: generic_in.inField026,
+	inField027: generic_in.inField027,
+	inField028: generic_in.inField028,
+	inField029: generic_in.inField029,
+	inField030: generic_in.inField030,
+	inField031: generic_in.inField031,
+	inField032: generic_in.inField032,
+	inField033: generic_in.inField033,
+	inField033: generic_in.inField033,
+	inField034: generic_in.inField034,
+	inField035: generic_in.inField035,
+	inField036: generic_in.inField036,
+	inField037: generic_in.inField037,
+	inField038: generic_in.inField038,
+	inField039: generic_in.inField039,
+	inField040: generic_in.inField040,
+	inField041: generic_in.inField041,
+	inField042: generic_in.inField042,
+	inField043: generic_in.inField043,
+	inField044: generic_in.inField044,
+	inField045: generic_in.inField045,
+	inField046: generic_in.inField046,
+	inField047: generic_in.inField047,
+	inField048: generic_in.inField048,
+	inField049: generic_in.inField049,
+	inField049: generic_in.inField050
+} as Object {class: "com.ingester.beans.GenericIncomingPayload"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
+			<batch:process-records >
+				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" >
+					<java:new doc:name="validate-and-transform-one-record" doc:id="bea48cec-1576-446e-80fa-2c3e43613e45" class="com.ingester.transformers.GenericTransformer" target="genericInstance" constructor="GenericTransformer(com.ingester.beans.GenericIncomingPayload)">
+						<java:args ><![CDATA[#[output application/java
+---
+{
+	genericIncoming: payload
+}]]]></java:args>
+					</java:new>
+					<batch:aggregator doc:name="process-incoming-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
+						<set-variable value="#[payload]" doc:name="Set Variable" doc:id="4b47877c-56bf-41cd-b509-c5dea440848d" variableName="locPayload"/>
+						<try doc:name="Try" doc:id="614b514d-8d37-4ffb-92f0-65ca51bf6b7b" >
+							<db:bulk-insert doc:name="insert-good-records" doc:id="a63a53eb-56a8-4996-9d38-39413f417fc0" config-ref="AzureSQLConfig">
+							<db:bulk-input-parameters><![CDATA[#[vars.locPayload]]]></db:bulk-input-parameters>
+							<db:sql><![CDATA[${database.sql.insert.emp-nine}]]></db:sql>
+						</db:bulk-insert>
+							<error-handler >
+								<on-error-continue enableNotifications="true" logException="true" doc:name="write-batch-failures-to-disk" doc:id="5b22f3a2-7640-4ece-94c7-79c8e3aa846a" >
+									<set-variable value="#[error.detailedDescription]" doc:name="Set Variable" doc:id="5f32edaf-7c72-4264-a646-24beb8e5481d" variableName="dbError"/>
+									<logger level="INFO" doc:name="Logger" doc:id="e6df3394-bbdf-4ed3-91de-f42baeb16475" message="Error after bulk insert: #[vars.dbError]" />
+									<ee:transform doc:name="Transform Message" doc:id="3bc033c2-59c3-4e9d-adf6-bd1603e4b4c8">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/csv
+---
+payload map(genericFailiure, indexOfGenericFailures) ->
+{
+	inField001: genericFailiure.inField001,
+	inField002: genericFailiure.inField002,
+	inField003: genericFailiure.inField003,
+	inField004: genericFailiure.inField004,
+	inField050: vars.dbError
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+									<file:write doc:name="Write" doc:id="9995c667-f8f2-4dce-b158-eacc6ae4ef51" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".dberrors.csv"]' config-ref="File_Config_Failures" />
+								</on-error-continue>
+							</error-handler>
+						</try>
+					</batch:aggregator>
+					<ee:transform doc:name="Transform Message" doc:id="b8e2cf5d-af5a-44ad-a406-d89ff398137c" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	inField001: vars.genericInstance.genericIncoming.inField001,
+	inField002: vars.genericInstance.genericIncoming.inField002,
+	inField003: vars.genericInstance.genericIncoming.inField003,
+	inField004: vars.genericInstance.genericIncoming.inField004,
+	inField005: vars.genericInstance.genericIncoming.inField005
+}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="incomingLoc" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	emp_name: vars.locWithPay.LOC,
+	emp_skills: vars.locWithPay.u_CITY,
+	emp_phone: vars.locWithPay.u_DISTRICTID,
+	emp_email: vars.locWithPay.u_DISTRICTDESCRIPTION
+}
+//{
+//	emp_name: vars.locInstance.locIncoming.LOC,
+//	emp_skills: vars.locInstance.locIncoming.u_CITY,
+//	emp_phone: vars.locInstance.locIncoming.u_CITY,
+//	emp_email: vars.locInstance.locIncoming.u_DISTRICTDESCRIPTION
+//}]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</batch:step>
+				<batch:step name="process-transform-failures" doc:id="ae0bd244-771c-46fd-ac31-cdc32ef67991" acceptPolicy="ONLY_FAILURES">
+					<batch:aggregator doc:name="write-transform-failures-to-disk" doc:id="d2d01f3d-760d-4aac-9ec7-59b30974231a" size="500">
+						<logger level="INFO" doc:name="Logger" doc:id="5f8fe07d-809d-4516-b84e-ac6471bf55e9" message="Failed records: #[payload]" />
+						<ee:transform doc:name="Transform Message" doc:id="88c25529-5345-44d5-85a1-2a2412e4f6f7" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload map(genericFailiure, indexOfGenericFailures) ->
+{
+	inField001: genericFailiure.inField001,
+	inField002: genericFailiure.inField002,
+	inField003: genericFailiure.inField003,
+	inField004: genericFailiure.inField004,
+	inField050: genericFailiure.inField050
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<file:write doc:name="Write" doc:id="c92a74ba-5b6a-4ca0-9cb6-cb91e68ea38c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".transformerrors.csv"]'/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+</mule>

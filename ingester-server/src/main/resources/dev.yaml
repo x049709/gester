@@ -1,0 +1,12 @@
+http:
+  port: "8083"
+database:
+  url: "jdbc:sqlserver://azureserverfree.database.windows.net:1433;database=azureserverfreetwo;user=x049709@azureserverfree;password=Aliaga00;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
+  sql:
+    select:
+      ref-data: "select  * from SalesLT.RefData"
+      mapping-sheet: "select  * from SalesLT.MappingSheet where TRIM(SOURCE_ENTITY) = :sourceEntity"
+    insert:
+      emp-nine: "insert into SalesLt.EmpNine (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, :inField004)"
+      #emp-nine: "insert into SalesLt.EmpNine (EmpID, EmpPhone, EmpName, EmpSkills, EmpEmail) values (1, :inField001, :inField002, :inField003, :inField004)"
+      #emp-nine-bad: "insert into SalesLt.EmpError (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, 'db error')"
