@@ -27,7 +27,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 	<configuration-properties doc:name="Configuration properties" doc:id="33602c1f-8833-4ff5-b252-d0008a4193c1" file="${env}.yaml" />
 	<flow name="ingester-main-flow" doc:id="53c21ad3-8085-43f2-8f85-98098ea7cdd4" >
 		<http:listener doc:name="Listener" doc:id="9852c75d-bac5-43a5-9551-ee2f552f1eaa" config-ref="HTTP_Listener_Ingester_config" path="main" allowedMethods="GET"/>
-		<logger level="INFO" doc:name="Logger" doc:id="4ea28d9a-2f19-4def-99e5-5d9a43565e9d" message='STARTING LOAD....  #["\n"] '/>
+		<logger level="INFO" doc:name="Logger" doc:id="4ea28d9a-2f19-4def-99e5-5d9a43565e9d" message='INGESTER STARTING LOAD....  #["\n"] '/>
 		<set-variable value="#[attributes.queryParams.sourceEntity]" doc:name="Set Variable" doc:id="697d6890-f1a5-4b1e-a9d7-3f145a620d6f" variableName="sourceEntity" />
 		<java:invoke-static doc:name="Load parameter list" doc:id="eecb847d-742c-45fb-9c83-5c0672ce87e9" class="com.ingester.loaders.ParameterLoader" method="LoadParameterList(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">
 			<java:args><![CDATA[#[output application/java
