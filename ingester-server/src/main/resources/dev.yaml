@@ -9,4 +9,3 @@ database:
     insert:
       emp-nine: "insert into SalesLt.EmpNine (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, :inField004)"
       #emp-nine: "insert into SalesLt.EmpNine (EmpID, EmpPhone, EmpName, EmpSkills, EmpEmail) values (1, :inField001, :inField002, :inField003, :inField004)"
-      #emp-nine-bad: "insert into SalesLt.EmpError (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, 'db error')"

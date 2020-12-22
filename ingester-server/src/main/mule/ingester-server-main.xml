@@ -41,6 +41,8 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 		</java:invoke-static>
 		<flow-ref doc:name="load-mapping-sheet-flow" doc:id="c1b0ac78-64a1-48c6-80bb-69250571a0c4" name="load-mapping-sheet"/>
 		<flow-ref doc:name="load-reference-data-flow" doc:id="35c4a353-8464-4428-82ea-438540a653bf" name="load-reference-data"/>
+		<java:new doc:name="new-transformer" doc:id="24f4ef1c-27ff-4f77-a5c7-2003f05c0b61" class="com.ingester.transformers.GenericTransformer" constructor="GenericTransformer()" target="genericTransformerInstance">
+		</java:new>
 		<flow-ref doc:name="load-incoming-records-flow" doc:id="fe2cc247-e54e-4b02-96f5-a9b64462a3a4" name="load-incoming-data"/>
 		<ee:transform doc:name="Transform Message" doc:id="0746ca50-1f5e-4555-81b2-88abfcd9b3ba" >
 			<ee:message >
@@ -166,13 +168,6 @@ payload map (generic_in, indexOfGenericIn) ->
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" >
-					<java:new doc:name="validate-and-transform-one-record" doc:id="bea48cec-1576-446e-80fa-2c3e43613e45" class="com.ingester.transformers.GenericTransformer" target="genericInstance" constructor="GenericTransformer(com.ingester.beans.GenericIncomingPayload)">
-						<java:args ><![CDATA[#[output application/java
----
-{
-	genericIncoming: payload
-}]]]></java:args>
-					</java:new>
 					<batch:aggregator doc:name="process-incoming-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
 						<set-variable value="#[payload]" doc:name="Set Variable" doc:id="4b47877c-56bf-41cd-b509-c5dea440848d" variableName="locPayload"/>
 						<try doc:name="Try" doc:id="614b514d-8d37-4ffb-92f0-65ca51bf6b7b" >
@@ -204,17 +199,24 @@ payload map(genericFailiure, indexOfGenericFailures) ->
 							</error-handler>
 						</try>
 					</batch:aggregator>
+					<java:invoke doc:name="validate-and-transform-one-record" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericTransformerInstance]" class="com.ingester.transformers.GenericTransformer" target="transformedIncoming" method="transformIncoming(com.ingester.beans.GenericIncomingPayload)">
+						<java:args ><![CDATA[#[output application/java
+---
+{
+	genericIncoming: payload
+}]]]></java:args>
+					</java:invoke>
 					<ee:transform doc:name="Transform Message" doc:id="b8e2cf5d-af5a-44ad-a406-d89ff398137c" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 {
-	inField001: vars.genericInstance.genericIncoming.inField001,
-	inField002: vars.genericInstance.genericIncoming.inField002,
-	inField003: vars.genericInstance.genericIncoming.inField003,
-	inField004: vars.genericInstance.genericIncoming.inField004,
-	inField005: vars.genericInstance.genericIncoming.inField005
+	inField001: payload.inField001,
+	inField002: payload.inField002,
+	inField003: payload.inField003,
+	inField004: payload.inField004,
+	inField005: payload.inField005
 }]]></ee:set-payload>
 						</ee:message>
 						<ee:variables >
@@ -244,13 +246,13 @@ output application/java
 								<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
 ---
-payload map(genericFailiure, indexOfGenericFailures) ->
+payload map(genericFailure, indexOfGenericFailures) ->
 {
-	inField001: genericFailiure.inField001,
-	inField002: genericFailiure.inField002,
-	inField003: genericFailiure.inField003,
-	inField004: genericFailiure.inField004,
-	inField050: genericFailiure.inField050
+	inField001: genericFailure.inField001,
+	inField002: genericFailure.inField002,
+	inField003: genericFailure.inField003,
+	inField004: genericFailure.inField004,
+	inField050: genericFailure.inField050
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
