@@ -6,12 +6,15 @@ import java.util.Map;
 
 import com.ingester.beans.MappingSheet;
 
-public class MappingSheetLoader {
+public class StaticMappingSheetLoader {
 	private static HashMap<String, MappingSheet> mappingSheetDataMap = new HashMap(); 
 	
-	public MappingSheetLoader() {
+	public StaticMappingSheetLoader() {
 		System.out.println("MappingSheetLoader default constructor done");
 	}	
+	public static HashMap<String, MappingSheet> getMappingSheetDataMap() {
+		return mappingSheetDataMap;
+	}
 	public static void LoadMappingSheet(ArrayList referenceDataArrayListIn) {
 		//System.out.println("loadReferenceDataArrayList static method with input:" + referenceDataArrayListIn);
 		mappingSheetDataMap.clear();

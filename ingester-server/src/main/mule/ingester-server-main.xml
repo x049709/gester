@@ -79,12 +79,12 @@ payload map (mapping_sheet, indexOfmapping_sheet) ->
 } as Object {class: "java.lang.String"}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<java:invoke-static doc:name="load-JSON-mapping-sheet" doc:id="e7edde0e-dc41-465f-8324-0d538cb3f03b" class="com.ingester.loaders.JSONMappingSheetLoader" method="LoadJSONMappingSheet(java.lang.String)">
+		<java:invoke-static doc:name="load-JSON-mapping-sheet" doc:id="e7edde0e-dc41-465f-8324-0d538cb3f03b" class="com.ingester.loaders.StaticJSONMappingSheetLoader" method="LoadJSONMappingSheet(java.lang.String)">
 			<java:args><![CDATA[#[{
 	mappingSheet: payload
 }]]]></java:args>
 		</java:invoke-static>
-		<java:invoke-static doc:name="load-ArrayList-mapping-sheet" doc:id="59e698cc-0388-4a01-84c6-ddcec6b429c8" class="com.ingester.loaders.MappingSheetLoader" method="LoadMappingSheet(java.util.ArrayList)">
+		<java:invoke-static doc:name="load-ArrayList-mapping-sheet" doc:id="59e698cc-0388-4a01-84c6-ddcec6b429c8" class="com.ingester.loaders.StaticMappingSheetLoader" method="LoadMappingSheet(java.util.ArrayList)">
 			<java:args><![CDATA[#[{
 	referenceDataArrayListIn: vars.arrayListMappingSheet
 }]]]></java:args>

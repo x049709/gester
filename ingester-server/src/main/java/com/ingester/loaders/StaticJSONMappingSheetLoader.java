@@ -1,6 +1,6 @@
 package com.ingester.loaders;
 
-public class JSONMappingSheetLoader {
+public class StaticJSONMappingSheetLoader {
 	private static String targetEntity;
 	private static String mappingSheet;
 	
@@ -8,7 +8,7 @@ public class JSONMappingSheetLoader {
 		return targetEntity;
 	}
 	public static void setTargetEntity(String targetEntity) {
-		JSONMappingSheetLoader.targetEntity = targetEntity;
+		StaticJSONMappingSheetLoader.targetEntity = targetEntity;
 	}
 	public static void LoadTargetEntity(String targetEntity) {
 		setTargetEntity(targetEntity);
@@ -18,9 +18,9 @@ public class JSONMappingSheetLoader {
 		return mappingSheet;
 	}
 	public static void setMappingSheet(String mappingSheet) {
-		JSONMappingSheetLoader.mappingSheet = mappingSheet;
+		StaticJSONMappingSheetLoader.mappingSheet = mappingSheet;
 	}
-	public JSONMappingSheetLoader() {
+	public StaticJSONMappingSheetLoader() {
 		System.out.println("MappingSheetLoader default constructor done");
 	}	
 	public static void LoadJSONMappingSheet(String mappingSheet) {
