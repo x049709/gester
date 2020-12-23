@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.ingester.beans.ReferenceData;
 
-public class ReferenceDataLoader {
+public class StaticReferenceDataLoader {
 	private static HashMap<String, String> referenceDataMap = new HashMap(); 
 	
 	public static HashMap<String, String> getReferenceDataMap() {

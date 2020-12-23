@@ -94,7 +94,7 @@ payload map (mapping_sheet, indexOfmapping_sheet) ->
 		<db:select doc:name="select-reference-data" doc:id="0e443da5-7c9a-4965-a5c8-fb627db2822b" config-ref="AzureSQLConfig">
 			<db:sql><![CDATA[${database.sql.select.ref-data}]]></db:sql>
 		</db:select>
-		<java:invoke-static doc:name="load-reference-data" doc:id="9d80697c-a22a-4899-bc5c-73388b07a40a" class="com.ingester.loaders.ReferenceDataLoader" method="loadReferenceDataArrayList(java.util.ArrayList)">
+		<java:invoke-static doc:name="load-reference-data" doc:id="9d80697c-a22a-4899-bc5c-73388b07a40a" class="com.ingester.loaders.StaticReferenceDataLoader" method="loadReferenceDataArrayList(java.util.ArrayList)">
 			<java:args><![CDATA[#[output application/java
 ---
 {
