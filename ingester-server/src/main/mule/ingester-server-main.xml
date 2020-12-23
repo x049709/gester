@@ -170,18 +170,17 @@ payload map (generic_in, indexOfGenericIn) ->
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" >
 					<batch:aggregator doc:name="process-incoming-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
 						<set-variable value="#[payload]" doc:name="Set Variable" doc:id="4b47877c-56bf-41cd-b509-c5dea440848d" variableName="locPayload"/>
-						<try doc:name="Try" doc:id="614b514d-8d37-4ffb-92f0-65ca51bf6b7b" >
-							<db:bulk-insert doc:name="insert-good-records" doc:id="a63a53eb-56a8-4996-9d38-39413f417fc0" config-ref="AzureSQLConfig">
-							<db:bulk-input-parameters><![CDATA[#[vars.locPayload]]]></db:bulk-input-parameters>
-							<db:sql><![CDATA[${database.sql.insert.emp-nine}]]></db:sql>
-						</db:bulk-insert>
+						<try doc:name="Try" doc:id="ce41634f-8cdb-4a9b-88eb-d256c9d6b8db" transactionalAction="ALWAYS_BEGIN">
+							<db:bulk-insert doc:name="insert-good-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
+								<db:bulk-input-parameters ><![CDATA[#[vars.locPayload]]]></db:bulk-input-parameters>
+								<db:sql ><![CDATA[${database.sql.insert.azure-loc}]]></db:sql>
+							</db:bulk-insert>
 							<error-handler >
-								<on-error-continue enableNotifications="true" logException="true" doc:name="write-batch-failures-to-disk" doc:id="5b22f3a2-7640-4ece-94c7-79c8e3aa846a" >
-									<set-variable value="#[error.detailedDescription]" doc:name="Set Variable" doc:id="5f32edaf-7c72-4264-a646-24beb8e5481d" variableName="dbError"/>
-									<logger level="INFO" doc:name="Logger" doc:id="e6df3394-bbdf-4ed3-91de-f42baeb16475" message="Error after bulk insert: #[vars.dbError]" />
-									<ee:transform doc:name="Transform Message" doc:id="3bc033c2-59c3-4e9d-adf6-bd1603e4b4c8">
-							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
+								<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
+									<set-variable value="#[error.detailedDescription ++ ':' ++ now() as String {format: &quot;yyyy-MM-dd-hh-mm-ss-SSS&quot;}]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="dbError" />
+									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
 ---
 payload map(genericFailiure, indexOfGenericFailures) ->
@@ -190,12 +189,12 @@ payload map(genericFailiure, indexOfGenericFailures) ->
 	inField002: genericFailiure.inField002,
 	inField003: genericFailiure.inField003,
 	inField004: genericFailiure.inField004,
-	inField050: vars.dbError
+	inField050: vars.dbError 
 }]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-									<file:write doc:name="Write" doc:id="9995c667-f8f2-4dce-b158-eacc6ae4ef51" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".dberrors.csv"]' config-ref="File_Config_Failures" />
-								</on-error-continue>
+										</ee:message>
+									</ee:transform>
+									<file:write doc:name="Write" doc:id="c79026a6-2b2f-4578-b8c3-6434e3d85549" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".dberrors.csv"]' />
+								</on-error-propagate>
 							</error-handler>
 						</try>
 					</batch:aggregator>
@@ -216,7 +215,9 @@ output application/java
 	inField002: payload.inField002,
 	inField003: payload.inField003,
 	inField004: payload.inField004,
-	inField005: payload.inField005
+	inField005: payload.inField005,
+	inField006: payload.inField006,
+	inField007: payload.inField007
 }]]></ee:set-payload>
 						</ee:message>
 						<ee:variables >

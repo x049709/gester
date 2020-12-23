@@ -9,3 +9,4 @@ database:
     insert:
       emp-nine: "insert into SalesLt.EmpNine (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, :inField004)"
       #emp-nine: "insert into SalesLt.EmpNine (EmpID, EmpPhone, EmpName, EmpSkills, EmpEmail) values (1, :inField001, :inField002, :inField003, :inField004)"
+      azure-loc: insert into SalesLt.LOC (LOC, DESCR, OHPOST, FRZSTART, SOURCECAL, DESTCAL, TYPE) values (:inField001, :inField002, :inField003, :inField004, :inField005, :inField006, :inField007);

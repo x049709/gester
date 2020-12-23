@@ -29,7 +29,7 @@ public class GenericTransformer {
 		HashMap<String, MappingSheet> mapSheetFromSingleton= MappingSheetSingleton.getInstance().getMappingSheetDataMap();
 		
 		//BEGIN these are POC lines
-		if (genericIncoming.getInField001().equalsIgnoreCase("1")) { 
+		if (genericIncoming.getInField001().equalsIgnoreCase("2")) { 
 			String errorMsg = "Error in transform"; 
 			this.genericIncoming.setInField004(errorMsg); 
 			throw new TransformException(errorMsg); 
