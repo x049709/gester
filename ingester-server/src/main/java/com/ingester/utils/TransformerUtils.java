@@ -12,6 +12,8 @@ public class TransformerUtils {
 	
 	private GenericIncomingPayload genericIncoming;
 
+	public TransformerUtils (){}
+	
 	public TransformerUtils(GenericIncomingPayload genericIncoming) throws NoSuchMethodException {
 		
 
@@ -25,5 +27,21 @@ public class TransformerUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+ 
+	public String getProperty(String propertyName, GenericIncomingPayload genericIncoming) throws NoSuchMethodException {
+		
+		String propertyValue = null;
+		try {
+			propertyValue = (String)PropertyUtils.getSimpleProperty(genericIncoming, propertyName);
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch bloc
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return propertyValue;
+		
 	}
 }

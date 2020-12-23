@@ -8,7 +8,8 @@ import com.ingester.beans.MappingSheet;
 
 public final class ReferenceDataSingleton implements Iterable<String>, Serializable {
 
-    private static volatile ReferenceDataSingleton referenceDataInstance = null;
+	private static final long serialVersionUID = 5458295846058786100L;
+	private static volatile ReferenceDataSingleton referenceDataInstance = null;
 	private static HashMap<String, String> referenceDataMap = new HashMap(); 
 
 	private ReferenceDataSingleton() {

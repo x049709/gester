@@ -25,7 +25,6 @@ public class StaticMappingSheetLoader {
         	for (Map.Entry entry : m.entrySet()) {
         		String hMapValue = null;
         		if (entry.getKey().equals("SOURCE_COL_NAME")) {
-        			hMapKey = (String)entry.getValue();
         			mSheet.setSOURCE_COL_NAME((String)entry.getValue());
         			//System.out.println(entry.getKey() + ", " + hMapKey);
         		}        		
@@ -35,6 +34,7 @@ public class StaticMappingSheetLoader {
           			//System.out.println(entry.getKey() + ", " + hMapValue);
         		}
         		if (entry.getKey().equals("GENERIC_COL_NAME")) {
+        				hMapKey = (String)entry.getValue();
             			hMapValue = (String)entry.getValue();
                			mSheet.setGENERIC_COL_NAME((String)entry.getValue());
                			//System.out.println(entry.getKey() + ", " + hMapValue);

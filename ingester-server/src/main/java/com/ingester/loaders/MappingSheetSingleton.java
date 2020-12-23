@@ -8,7 +8,8 @@ import com.ingester.beans.MappingSheet;
 
 public final class MappingSheetSingleton implements Iterable<MappingSheet>, Serializable {
 
-    private static volatile MappingSheetSingleton mappingSheetInstance = null;
+ 	private static final long serialVersionUID = 2615746884227658816L;
+	private static volatile MappingSheetSingleton mappingSheetInstance = null;
 	private HashMap<String, MappingSheet> mappingSheetDataMap = new HashMap(); 
 
 	private MappingSheetSingleton() {
