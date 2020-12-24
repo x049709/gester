@@ -176,7 +176,7 @@ payload map (generic_in, indexOfGenericIn) ->
 								<db:sql ><![CDATA[${database.sql.insert.azure-loc}]]></db:sql>
 							</db:bulk-insert>
 							<error-handler >
-								<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
+								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
 									<set-variable value="#[error.detailedDescription ++ ':' ++ now() as String {format: &quot;yyyy-MM-dd-hh-mm-ss-SSS&quot;}]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="dbError" />
 									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a" >
 										<ee:message >
@@ -246,14 +246,16 @@ output application/java
 							<ee:message >
 								<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
+var dbfail = "db failure"
 ---
 payload map(genericFailure, indexOfGenericFailures) ->
 {
-	inField001: genericFailure.inField001,
-	inField002: genericFailure.inField002,
-	inField003: genericFailure.inField003,
-	inField004: genericFailure.inField004,
-	inField050: genericFailure.inField050
+	"inField001": genericFailure.inField001,
+	"inField002": genericFailure.inField002,
+	"inField003": genericFailure.inField003,
+	"inField004": genericFailure.inField004,
+	"inField050": if(genericFailure.inField004 == "Error in transform") genericFailure.inField004 else dbfail
+	
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
