@@ -111,6 +111,7 @@ payload map (mapping_sheet, indexOfmapping_sheet) ->
 output application/java---
 payload map (generic_in, indexOfGenericIn) ->
 {
+	inFieldSeq: indexOfGenericIn+1,
 	inField001: generic_in.inField001,
 	inField002: generic_in.inField002,
 	inField003: generic_in.inField003,
@@ -165,6 +166,7 @@ payload map (generic_in, indexOfGenericIn) ->
 } as Object {class: "com.ingester.beans.GenericIncomingPayload"}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="628a1dd7-cfbb-415e-9391-08479e6abc26" />
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" >

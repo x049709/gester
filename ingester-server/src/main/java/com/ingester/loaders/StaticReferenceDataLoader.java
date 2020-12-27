@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ingester.beans.ReferenceData;
-
 public class StaticReferenceDataLoader {
 	private static HashMap<String, String> referenceDataMap = new HashMap(); 
 	

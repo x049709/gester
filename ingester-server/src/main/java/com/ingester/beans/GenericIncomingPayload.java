@@ -1,6 +1,10 @@
 package com.ingester.beans;
 
-public class GenericIncomingPayload {
+import java.io.Serializable;
+
+public class GenericIncomingPayload implements Serializable {
+	private static final long serialVersionUID = -1729021477896162127L;
+	private int inFieldSeq;
 	private String inField001;
 	private String inField002;
 	private String inField003;
@@ -52,6 +56,12 @@ public class GenericIncomingPayload {
 	private String inField049;
 	private String inField050;
 	
+	public int getInFieldSeq() {
+		return inFieldSeq;
+	}
+	public void setInFieldSeq(int inFieldSeq) {
+		this.inFieldSeq = inFieldSeq;
+	}
 	public String getInField001() {
 		return inField001;
 	}
@@ -354,22 +364,23 @@ public class GenericIncomingPayload {
 	}
 	@Override
 	public String toString() {
-		return "GenericIncomingPayload [inField001=" + inField001 + ", inField002=" + inField002 + ", inField003="
-				+ inField003 + ", inField004=" + inField004 + ", inField005=" + inField005 + ", inField006="
-				+ inField006 + ", inField007=" + inField007 + ", inField008=" + inField008 + ", inField009="
-				+ inField009 + ", inField010=" + inField010 + ", inField011=" + inField011 + ", inField012="
-				+ inField012 + ", inField013=" + inField013 + ", inField014=" + inField014 + ", inField015="
-				+ inField015 + ", inField016=" + inField016 + ", inField017=" + inField017 + ", inField018="
-				+ inField018 + ", inField019=" + inField019 + ", inField020=" + inField020 + ", inField021="
-				+ inField021 + ", inField022=" + inField022 + ", inField023=" + inField023 + ", inField024="
-				+ inField024 + ", inField025=" + inField025 + ", inField026=" + inField026 + ", inField027="
-				+ inField027 + ", inField028=" + inField028 + ", inField029=" + inField029 + ", inField030="
-				+ inField030 + ", inField031=" + inField031 + ", inField032=" + inField032 + ", inField033="
-				+ inField033 + ", inField034=" + inField034 + ", inField035=" + inField035 + ", inField036="
-				+ inField036 + ", inField037=" + inField037 + ", inField038=" + inField038 + ", inField039="
-				+ inField039 + ", inField040=" + inField040 + ", inField041=" + inField041 + ", inField042="
-				+ inField042 + ", inField043=" + inField043 + ", inField044=" + inField044 + ", inField045="
-				+ inField045 + ", inField046=" + inField046 + ", inField047=" + inField047 + ", inField048="
-				+ inField048 + ", inField049=" + inField049 + ", inField050=" + inField050 + "]";
+		return "GenericIncomingPayload [inFieldSeq=" + inFieldSeq + ", inField001=" + inField001 + ", inField002="
+				+ inField002 + ", inField003=" + inField003 + ", inField004=" + inField004 + ", inField005="
+				+ inField005 + ", inField006=" + inField006 + ", inField007=" + inField007 + ", inField008="
+				+ inField008 + ", inField009=" + inField009 + ", inField010=" + inField010 + ", inField011="
+				+ inField011 + ", inField012=" + inField012 + ", inField013=" + inField013 + ", inField014="
+				+ inField014 + ", inField015=" + inField015 + ", inField016=" + inField016 + ", inField017="
+				+ inField017 + ", inField018=" + inField018 + ", inField019=" + inField019 + ", inField020="
+				+ inField020 + ", inField021=" + inField021 + ", inField022=" + inField022 + ", inField023="
+				+ inField023 + ", inField024=" + inField024 + ", inField025=" + inField025 + ", inField026="
+				+ inField026 + ", inField027=" + inField027 + ", inField028=" + inField028 + ", inField029="
+				+ inField029 + ", inField030=" + inField030 + ", inField031=" + inField031 + ", inField032="
+				+ inField032 + ", inField033=" + inField033 + ", inField034=" + inField034 + ", inField035="
+				+ inField035 + ", inField036=" + inField036 + ", inField037=" + inField037 + ", inField038="
+				+ inField038 + ", inField039=" + inField039 + ", inField040=" + inField040 + ", inField041="
+				+ inField041 + ", inField042=" + inField042 + ", inField043=" + inField043 + ", inField044="
+				+ inField044 + ", inField045=" + inField045 + ", inField046=" + inField046 + ", inField047="
+				+ inField047 + ", inField048=" + inField048 + ", inField049=" + inField049 + ", inField050="
+				+ inField050 + "]";
 	}
 }

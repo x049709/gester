@@ -3,7 +3,9 @@ package com.ingester.transformers;
 import java.util.HashMap;
 
 import com.ingester.beans.GenericIncomingPayload;
+import com.ingester.beans.GenericOutgoingPayload;
 import com.ingester.beans.MappingSheet;
+import com.ingester.constants.TransformConstants;
 import com.ingester.exceptions.TransformException;
 import com.ingester.loaders.MappingSheetSingleton;
 import com.ingester.loaders.ReferenceDataSingleton;
@@ -12,22 +14,12 @@ import com.ingester.utils.TransformerUtils;
 public class GenericTransformer {
 	private GenericIncomingPayload genericIncoming;
 
-	public GenericIncomingPayload getGenericIncoming() {
-		return genericIncoming;
-	}
-	public void setGenericIncoming(GenericIncomingPayload genericIncomingIn) 
-	{
-		this.genericIncoming = genericIncomingIn;
-	}
+	public GenericTransformer() {}
 
-	public GenericTransformer() {
-	}
-	
-	public GenericIncomingPayload transformIncoming(GenericIncomingPayload genericIncoming) throws TransformException, NoSuchMethodException{
-		this.setGenericIncoming(genericIncoming);
-		HashMap<String, String> refDataFromSingleton= ReferenceDataSingleton.getInstance().getReferenceDataMap();
-		HashMap<String, MappingSheet> mapSheetFromSingleton= MappingSheetSingleton.getInstance().getMappingSheetDataMap();
-		
+	public GenericOutgoingPayload transformIncoming(GenericIncomingPayload genericIncoming) throws TransformException, NoSuchMethodException{
+		HashMap<String, String> refDataFromSingleton = ReferenceDataSingleton.getInstance().getReferenceDataMap();
+		HashMap<String, MappingSheet> mapSheetFromSingleton = MappingSheetSingleton.getInstance().getMappingSheetDataMap();
+
 		//BEGIN these are POC lines
 		if (genericIncoming.getInField001().equalsIgnoreCase("2")) { 
 			String errorMsg = "Error in transform"; 
@@ -36,32 +28,56 @@ public class GenericTransformer {
 		}
 		//END these are POC lines
 		
-		this.transformOneIncomingRecord(refDataFromSingleton, mapSheetFromSingleton);
-		
-		return this.getGenericIncoming();
-	}
-	
-	private void transformOneIncomingRecord(HashMap<String, String> refDataFromSingleton, HashMap<String, MappingSheet> mapSheetFromSingleton) throws NoSuchMethodException {
-		System.out.println("Incoming record" + this.getGenericIncoming().toString());
+		GenericOutgoingPayload genericOutgoing = new GenericOutgoingPayload();
+		System.out.println("Incoming record" + genericIncoming.toString());
 		TransformerUtils tUtils = new TransformerUtils();
 		int i=1;
 		while (i<=mapSheetFromSingleton.size()) {
-			this.transformOneIncomingField(i, refDataFromSingleton,mapSheetFromSingleton, tUtils);
+			//TODO have to account for inFieldSeq
+			String propertyName = String.format("inField%03d", i);
+			String propertyValue = tUtils.getProperty(propertyName, genericIncoming);
+			System.out.println("Incoming field value for field: " + propertyName + ": " + propertyValue);
+			MappingSheet mapSheetForField = mapSheetFromSingleton.get(propertyName);
+			System.out.println("Mapping sheet for field: " + propertyName + ": " + mapSheetForField.toString());
+			this.transformOneIncomingField(refDataFromSingleton, 
+					propertyName, 
+					propertyValue, 
+					mapSheetForField, 
+					genericOutgoing, 
+					tUtils);
 			i++;
 		};
 		
+		return genericOutgoing;
+	}
+	
+	private void transformOneIncomingField(HashMap<String, String> refDataFromSingleton, 
+			String propertyName, 
+			String propertyValue, 
+			MappingSheet mapSheetForField, 
+			GenericOutgoingPayload genericOutgoingPayload, 
+			TransformerUtils tUtils) throws NoSuchMethodException {
+
+		String ingestionRule = mapSheetForField.getINGESTION_RULE();
+		this.executeIngestionRule(refDataFromSingleton, 
+				propertyName, 
+				propertyValue, 
+				ingestionRule, 
+				genericOutgoingPayload,
+				tUtils);
 	}
 
-	private void transformOneIncomingField(int i, HashMap<String, String> refDataFromSingleton, HashMap<String, MappingSheet> mapSheetFromSingleton, TransformerUtils tUtils) throws NoSuchMethodException {
-		String inFieldName = String.format("inField%03d", i);
-		MappingSheet mapSheetForField = mapSheetFromSingleton.get(inFieldName);
-		System.out.println("Mapping sheet for field: " + inFieldName + ": " + mapSheetForField.toString());
-		String propertyValue = tUtils.getProperty(inFieldName, this.getGenericIncoming());
-		System.out.println("Incoming field value for field: " + inFieldName + ": " + propertyValue);
-		
-		
-	}
+	private void executeIngestionRule(HashMap<String, String> refDataFromSingleton, 
+			String propertyName, 
+			String propertyValue, 
+			String ingestionRule, 
+			GenericOutgoingPayload genericOutgoing, 
+			TransformerUtils tUtils) throws NoSuchMethodException {
 
+		if (ingestionRule.equalsIgnoreCase(TransformConstants.NO_INGESTION_RULE)) {
+			tUtils.setProperty(propertyName, propertyValue, genericOutgoing);
+		}
+	}
 
 }
 

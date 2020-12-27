@@ -1,6 +1,9 @@
 package com.ingester.beans;
 
-public class MappingSheet {
+import java.io.Serializable;
+
+public class MappingSheet implements Serializable {
+	private static final long serialVersionUID = 1062480979429311320L;
 	private String SOURCE_ENTITY;
 	private String SOURCE_COL_NAME;
 	private String GENERIC_COL_NAME;
