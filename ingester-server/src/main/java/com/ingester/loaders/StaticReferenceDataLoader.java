@@ -30,7 +30,7 @@ public class StaticReferenceDataLoader {
     			referenceDataMap.put(hMapKey, hMapValue);
     		}
         }
-		System.out.println("Reference data loaded:" + referenceDataMap);
+		//System.out.println("Reference data loaded:" + referenceDataMap);
 	}
         
 }

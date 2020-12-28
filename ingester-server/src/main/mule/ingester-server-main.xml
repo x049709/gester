@@ -103,7 +103,7 @@ payload map (mapping_sheet, indexOfmapping_sheet) ->
 		</java:invoke-static>
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
-		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Anypoint Projects/workspace-fr-jda-machine/udemy-examples-layouts/file_processing/file_in/generic_incoming.csv"/>
+		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Anypoint Projects/workspace-fr-jda-machine/udemy-examples-layouts/file_processing/file_in/generic_incoming_valid_data.csv"/>
 		<set-variable value="#[attributes.fileName]" doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
 		<ee:transform doc:name="Transform Message" doc:id="4686289d-73ae-4d33-9ff8-d488c951ae25" >
 			<ee:message >
@@ -162,11 +162,10 @@ payload map (generic_in, indexOfGenericIn) ->
 	inField047: generic_in.inField047,
 	inField048: generic_in.inField048,
 	inField049: generic_in.inField049,
-	inField049: generic_in.inField050
+	inField050: generic_in.inField050
 } as Object {class: "com.ingester.beans.GenericIncomingPayload"}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="628a1dd7-cfbb-415e-9391-08479e6abc26" />
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" >
@@ -175,7 +174,7 @@ payload map (generic_in, indexOfGenericIn) ->
 						<try doc:name="Try" doc:id="ce41634f-8cdb-4a9b-88eb-d256c9d6b8db" transactionalAction="ALWAYS_BEGIN">
 							<db:bulk-insert doc:name="insert-good-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
 								<db:bulk-input-parameters ><![CDATA[#[vars.locPayload]]]></db:bulk-input-parameters>
-								<db:sql ><![CDATA[${database.sql.insert.azure-loc}]]></db:sql>
+								<db:sql ><![CDATA[${database.sql.insert.azure-loc-all-40}]]></db:sql>
 							</db:bulk-insert>
 							<error-handler >
 								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
@@ -213,13 +212,58 @@ payload map(genericFailiure, indexOfGenericFailures) ->
 output application/java
 ---
 {
+	inFieldSeq: payload.inFieldSeq,
 	inField001: payload.inField001,
 	inField002: payload.inField002,
 	inField003: payload.inField003,
 	inField004: payload.inField004,
 	inField005: payload.inField005,
 	inField006: payload.inField006,
-	inField007: payload.inField007
+	inField007: payload.inField007,
+	inField008: payload.inField008,
+	inField009: payload.inField009,
+	inField010: payload.inField010,
+	inField011: payload.inField011,
+	inField012: payload.inField012,
+	inField013: payload.inField013,
+	inField014: payload.inField014,
+	inField015: payload.inField015,
+	inField016: payload.inField016,
+	inField017: payload.inField017,
+	inField018: payload.inField018,
+	inField019: payload.inField019,
+	inField020: payload.inField020,
+	inField021: payload.inField021,
+	inField022: payload.inField022,
+	inField023: payload.inField023,
+	inField024: payload.inField024,
+	inField025: payload.inField025,
+	inField026: payload.inField026,
+	inField027: payload.inField027,
+	inField028: payload.inField028,
+	inField029: payload.inField029,
+	inField030: payload.inField030,
+	inField031: payload.inField031,
+	inField032: payload.inField032,
+	inField033: payload.inField033,
+	inField033: payload.inField033,
+	inField034: payload.inField034,
+	inField035: payload.inField035,
+	inField036: payload.inField036,
+	inField037: payload.inField037,
+	inField038: payload.inField038,
+	inField039: payload.inField039,
+	inField040: payload.inField040,
+	inField041: payload.inField041,
+	inField042: payload.inField042,
+	inField043: payload.inField043,
+	inField044: payload.inField044,
+	inField045: payload.inField045,
+	inField046: payload.inField046,
+	inField047: payload.inField047,
+	inField048: payload.inField048,
+	inField049: payload.inField049,
+	inField050: payload.inField050
 }]]></ee:set-payload>
 						</ee:message>
 						<ee:variables >

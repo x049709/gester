@@ -31,11 +31,18 @@ public class GenericTransformer {
 		GenericOutgoingPayload genericOutgoing = new GenericOutgoingPayload();
 		System.out.println("Incoming record" + genericIncoming.toString());
 		TransformerUtils tUtils = new TransformerUtils();
+		
+		//Copy the sequence number from input to output
+		String intPropertyName = String.format("inFieldSeq");
+		int intPropertyValue = tUtils.getIntProperty(intPropertyName, genericIncoming);
+		tUtils.setIntProperty(intPropertyName, intPropertyValue, genericOutgoing);		
+
+		
+		//Loop thru the rest of the input fields, transforming as required in the mapping sheet
 		int i=1;
 		while (i<=mapSheetFromSingleton.size()) {
-			//TODO have to account for inFieldSeq
 			String propertyName = String.format("inField%03d", i);
-			String propertyValue = tUtils.getProperty(propertyName, genericIncoming);
+			String propertyValue = tUtils.getStringProperty(propertyName, genericIncoming);
 			System.out.println("Incoming field value for field: " + propertyName + ": " + propertyValue);
 			MappingSheet mapSheetForField = mapSheetFromSingleton.get(propertyName);
 			System.out.println("Mapping sheet for field: " + propertyName + ": " + mapSheetForField.toString());
@@ -55,7 +62,7 @@ public class GenericTransformer {
 			String propertyName, 
 			String propertyValue, 
 			MappingSheet mapSheetForField, 
-			GenericOutgoingPayload genericOutgoingPayload, 
+			GenericOutgoingPayload genericOutgoing, 
 			TransformerUtils tUtils) throws NoSuchMethodException {
 
 		String ingestionRule = mapSheetForField.getINGESTION_RULE();
@@ -63,7 +70,7 @@ public class GenericTransformer {
 				propertyName, 
 				propertyValue, 
 				ingestionRule, 
-				genericOutgoingPayload,
+				genericOutgoing,
 				tUtils);
 	}
 
@@ -75,7 +82,9 @@ public class GenericTransformer {
 			TransformerUtils tUtils) throws NoSuchMethodException {
 
 		if (ingestionRule.equalsIgnoreCase(TransformConstants.NO_INGESTION_RULE)) {
-			tUtils.setProperty(propertyName, propertyValue, genericOutgoing);
+			tUtils.setStringProperty(propertyName, propertyValue, genericOutgoing);
+		} else {
+			tUtils.setStringProperty(propertyName, propertyValue, genericOutgoing);			
 		}
 	}
 
