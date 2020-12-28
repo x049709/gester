@@ -64,26 +64,6 @@ output application/json
 }]]]></db:input-parameters>
 		</db:select>
 		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="d3ffbd5c-8e05-4ea0-b695-795dfe2c972c" variableName="arrayListMappingSheet" />
-		<ee:transform doc:name="Transform Message" doc:id="e7765102-1462-4503-b6f7-5246da021626">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload map (mapping_sheet, indexOfmapping_sheet) ->
-{
-	SOURCE_ENTITY: mapping_sheet.SOURCE_ENTITY,
-	SOURCE_COL_NAME: mapping_sheet.SOURCE_COL_NAME,
-	GENERIC_COL_NAME: mapping_sheet.GENERIC_COL_NAME,
-	TARGET_ENTITY: mapping_sheet.TARGET_ENTITY,
-	TARGET_COL_NAME: mapping_sheet.TARGET_COL_NAME
-} as Object {class: "java.lang.String"}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<java:invoke-static doc:name="load-JSON-mapping-sheet" doc:id="e7edde0e-dc41-465f-8324-0d538cb3f03b" class="com.ingester.loaders.StaticJSONMappingSheetLoader" method="LoadJSONMappingSheet(java.lang.String)">
-			<java:args><![CDATA[#[{
-	mappingSheet: payload
-}]]]></java:args>
-		</java:invoke-static>
 		<java:invoke-static doc:name="load-ArrayList-mapping-sheet" doc:id="59e698cc-0388-4a01-84c6-ddcec6b429c8" class="com.ingester.loaders.StaticMappingSheetLoader" method="LoadMappingSheet(java.util.ArrayList)">
 			<java:args><![CDATA[#[{
 	referenceDataArrayListIn: vars.arrayListMappingSheet
@@ -184,12 +164,13 @@ payload map (generic_in, indexOfGenericIn) ->
 											<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
 ---
-payload map(genericFailiure, indexOfGenericFailures) ->
+payload map(genericFailure, indexOfGenericFailures) ->
 {
-	inField001: genericFailiure.inField001,
-	inField002: genericFailiure.inField002,
-	inField003: genericFailiure.inField003,
-	inField004: genericFailiure.inField004,
+	inFieldSeq: genericFailure.inFieldSeq,
+	inField001: genericFailure.inField001,
+	inField002: genericFailure.inField002,
+	inField003: genericFailure.inField003,
+	inField004: genericFailure.inField004,
 	inField050: vars.dbError 
 }]]></ee:set-payload>
 										</ee:message>
@@ -296,6 +277,7 @@ var dbfail = "db failure"
 ---
 payload map(genericFailure, indexOfGenericFailures) ->
 {
+	"inFieldSeq": genericFailure.inFieldSeq,
 	"inField001": genericFailure.inField001,
 	"inField002": genericFailure.inField002,
 	"inField003": genericFailure.inField003,

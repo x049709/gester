@@ -49,7 +49,12 @@ public class StaticMappingSheetLoader {
            			mSheet.setTARGET_COL_NAME((String)entry.getValue());
           			//System.out.println(entry.getKey() + ", " + hMapValue);
         		}
-        		if (entry.getKey().equals("INGESTION_RULE")) {
+        		if (entry.getKey().equals("REQUIRED_FLAG")) {
+        			hMapValue = (String)entry.getValue();
+           			mSheet.setREQUIRED_FLAG((String)entry.getValue());
+          			//System.out.println(entry.getKey() + ", " + hMapValue);
+        		}
+       		if (entry.getKey().equals("INGESTION_RULE")) {
         			hMapValue = (String)entry.getValue();
            			mSheet.setINGESTION_RULE((String)entry.getValue());
            			//System.out.println(entry.getKey() + ", " + hMapValue);
