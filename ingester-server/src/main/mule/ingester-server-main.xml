@@ -84,7 +84,7 @@ output application/json
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
 		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_valid_data.csv"/>
-		<set-variable value="#[attributes.fileName]" doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
+		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
 		<ee:transform doc:name="Transform Message" doc:id="4686289d-73ae-4d33-9ff8-d488c951ae25" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -149,15 +149,16 @@ payload map (generic_in, indexOfGenericIn) ->
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" acceptPolicy="ALL">
-					<batch:aggregator doc:name="process-incoming-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
+					<batch:aggregator doc:name="process-aggregated-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
 						<set-variable value="#[payload]" doc:name="Set Variable" doc:id="4b47877c-56bf-41cd-b509-c5dea440848d" variableName="locPayload"/>
 						<try doc:name="Try" doc:id="ce41634f-8cdb-4a9b-88eb-d256c9d6b8db" transactionalAction="ALWAYS_BEGIN">
-							<db:bulk-insert doc:name="insert-good-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
+							<db:bulk-insert doc:name="insert-aggregated-transformed-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
 								<db:bulk-input-parameters ><![CDATA[#[vars.locPayload]]]></db:bulk-input-parameters>
 								<db:sql ><![CDATA[${database.sql.insert.azure-loc-all-40}]]></db:sql>
 							</db:bulk-insert>
 							<error-handler >
 								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
+									<set-variable value="#[error.exception.cause.target.detailMessage]" doc:name="Set Variable" doc:id="27d12c89-a51f-4815-99d5-b6a486d3c724" variableName="dbError" />
 									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a">
 										<ee:message>
 											<ee:set-payload><![CDATA[%dw 2.0
@@ -174,7 +175,7 @@ payload map(genericFailure, indexOfGenericFailures) ->
 }]]></ee:set-payload>
 										</ee:message>
 									</ee:transform>
-									<file:write doc:name="Write" doc:id="c79026a6-2b2f-4578-b8c3-6434e3d85549" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".dberrors.csv"]' />
+									<file:write doc:name="Write" doc:id="c79026a6-2b2f-4578-b8c3-6434e3d85549" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ ".dberrors.csv"]' mode="APPEND"/>
 								</on-error-propagate>
 							</error-handler>
 						</try>
@@ -188,12 +189,12 @@ payload map(genericFailure, indexOfGenericFailures) ->
 }]]]></java:args>
 					</java:invoke>
 						<error-handler >
-							<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
+							<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-transform-errors-to-disk" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
 								<set-variable value="#[error.exception.cause.target.detailMessage]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
 								<ee:transform doc:name="Transform Message" doc:id="826b9077-719a-44ce-ac13-1c0b778c426d" >
 									<ee:message >
 										<ee:set-payload ><![CDATA[%dw 2.0
-output application/csv
+output application/json
 ---
 {
 	inFieldSeq: payload.inFieldSeq,
@@ -205,7 +206,7 @@ output application/csv
 }]]></ee:set-payload>
 									</ee:message>
 								</ee:transform>
-								<file:write doc:name="Write" doc:id="9de947d2-17d4-48f3-bd14-c35ff3d8349c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".xformerrors.csv"]' />
+								<file:write doc:name="Write" doc:id="9de947d2-17d4-48f3-bd14-c35ff3d8349c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ ".transformerrors.json"]' mode="APPEND"/>
 							</on-error-propagate>
 						</error-handler>
 					</try>

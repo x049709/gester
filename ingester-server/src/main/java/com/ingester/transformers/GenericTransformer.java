@@ -49,7 +49,7 @@ public class GenericTransformer {
 		};
 		
 		//BEGIN these are POC lines
-		if (genericIncoming.getInField001().equalsIgnoreCase("LOC1")) { 
+		if (genericIncoming.getInField001().equalsIgnoreCase("LOC1") || genericIncoming.getInField001().equalsIgnoreCase("LOC5") ) { 
 			String errorMsg = "BADREC"; 
 			genericOutgoing.setinField040(errorMsg); 
 			throw new TransformException(errorMsg); 
