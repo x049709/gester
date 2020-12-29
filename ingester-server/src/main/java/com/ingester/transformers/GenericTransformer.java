@@ -19,16 +19,8 @@ public class GenericTransformer {
 	public GenericOutgoingPayload transformIncoming(GenericIncomingPayload genericIncoming) throws TransformException, NoSuchMethodException{
 		HashMap<String, String> refDataFromSingleton = ReferenceDataSingleton.getInstance().getReferenceDataMap();
 		HashMap<String, MappingSheet> mapSheetFromSingleton = MappingSheetSingleton.getInstance().getMappingSheetDataMap();
-
-		//BEGIN these are POC lines
-		if (genericIncoming.getInField001().equalsIgnoreCase("2")) { 
-			String errorMsg = "Error in transform"; 
-			this.genericIncoming.setInField004(errorMsg); 
-			throw new TransformException(errorMsg); 
-		}
-		//END these are POC lines
-		
 		GenericOutgoingPayload genericOutgoing = new GenericOutgoingPayload();
+
 		System.out.println("Incoming record" + genericIncoming.toString());
 		TransformerUtils tUtils = new TransformerUtils();
 		
@@ -44,6 +36,7 @@ public class GenericTransformer {
 			String propertyName = String.format("inField%03d", i);
 			String propertyValue = tUtils.getStringProperty(propertyName, genericIncoming);
 			System.out.println("Incoming field value for field: " + propertyName + ": " + propertyValue);
+			tUtils.setStringProperty(propertyName, propertyValue, genericOutgoing);		
 			MappingSheet mapSheetForField = mapSheetFromSingleton.get(propertyName);
 			System.out.println("Mapping sheet for field: " + propertyName + ": " + mapSheetForField.toString());
 			this.transformOneIncomingField(refDataFromSingleton, 
@@ -54,6 +47,14 @@ public class GenericTransformer {
 					tUtils);
 			i++;
 		};
+		
+		//BEGIN these are POC lines
+		if (genericIncoming.getInField001().equalsIgnoreCase("LOC1")) { 
+			String errorMsg = "BADREC"; 
+			genericOutgoing.setinField040(errorMsg); 
+			throw new TransformException(errorMsg); 
+		}
+		//END these are POC lines
 		
 		return genericOutgoing;
 	}
