@@ -95,13 +95,4 @@ type: string]]></types:shape>
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
-  <types:enrichment select="#88c25529-5345-44d5-85a1-2a2412e4f6f7">
-    <types:processor-declaration>
-      <types:output-event>
-        <types:message>
-          <types:payload type="LocIncoming"/>
-        </types:message>
-      </types:output-event>
-    </types:processor-declaration>
-  </types:enrichment>
 </types:mule>

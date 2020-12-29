@@ -158,10 +158,9 @@ payload map (generic_in, indexOfGenericIn) ->
 							</db:bulk-insert>
 							<error-handler >
 								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
-									<set-variable value="#[error.detailedDescription ++ ':' ++ now() as String {format: &quot;yyyy-MM-dd-hh-mm-ss-SSS&quot;}]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="dbError" />
-									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a" >
-										<ee:message >
-											<ee:set-payload ><![CDATA[%dw 2.0
+									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
 output application/csv
 ---
 payload map(genericFailure, indexOfGenericFailures) ->
@@ -180,115 +179,36 @@ payload map(genericFailure, indexOfGenericFailures) ->
 							</error-handler>
 						</try>
 					</batch:aggregator>
-					<java:invoke doc:name="validate-and-transform-one-record" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericTransformerInstance]" class="com.ingester.transformers.GenericTransformer" target="transformedIncoming" method="transformIncoming(com.ingester.beans.GenericIncomingPayload)">
-						<java:args ><![CDATA[#[output application/java
+					<try doc:name="Try" doc:id="b720bc35-1bd6-4f7a-99a5-c897c51374e1" >
+						<java:invoke doc:name="validate-and-transform-one-record" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericTransformerInstance]" class="com.ingester.transformers.GenericTransformer" target="transformedIncoming" method="transformIncoming(com.ingester.beans.GenericIncomingPayload)">
+						<java:args><![CDATA[#[output application/java
 ---
 {
 	genericIncoming: payload
 }]]]></java:args>
 					</java:invoke>
-					<ee:transform doc:name="Transform Message" doc:id="b8e2cf5d-af5a-44ad-a406-d89ff398137c" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-	inFieldSeq: vars.transformedIncoming.inFieldSeq,
-	inField001: vars.transformedIncoming.inField001,
-	inField002: vars.transformedIncoming.inField002,
-	inField003: vars.transformedIncoming.inField003,
-	inField004: vars.transformedIncoming.inField004,
-	inField005: vars.transformedIncoming.inField005,
-	inField006: vars.transformedIncoming.inField006,
-	inField007: vars.transformedIncoming.inField007,
-	inField008: vars.transformedIncoming.inField008,
-	inField009: vars.transformedIncoming.inField009,
-	inField010: vars.transformedIncoming.inField010,
-	inField011: vars.transformedIncoming.inField011,
-	inField012: vars.transformedIncoming.inField012,
-	inField013: vars.transformedIncoming.inField013,
-	inField014: vars.transformedIncoming.inField014,
-	inField015: vars.transformedIncoming.inField015,
-	inField016: vars.transformedIncoming.inField016,
-	inField017: vars.transformedIncoming.inField017,
-	inField018: vars.transformedIncoming.inField018,
-	inField019: vars.transformedIncoming.inField019,
-	inField020: vars.transformedIncoming.inField020,
-	inField021: vars.transformedIncoming.inField021,
-	inField022: vars.transformedIncoming.inField022,
-	inField023: vars.transformedIncoming.inField023,
-	inField024: vars.transformedIncoming.inField024,
-	inField025: vars.transformedIncoming.inField025,
-	inField026: vars.transformedIncoming.inField026,
-	inField027: vars.transformedIncoming.inField027,
-	inField028: vars.transformedIncoming.inField028,
-	inField029: vars.transformedIncoming.inField029,
-	inField030: vars.transformedIncoming.inField030,
-	inField031: vars.transformedIncoming.inField031,
-	inField032: vars.transformedIncoming.inField032,
-	inField033: vars.transformedIncoming.inField033,
-	inField033: vars.transformedIncoming.inField033,
-	inField034: vars.transformedIncoming.inField034,
-	inField035: vars.transformedIncoming.inField035,
-	inField036: vars.transformedIncoming.inField036,
-	inField037: vars.transformedIncoming.inField037,
-	inField038: vars.transformedIncoming.inField038,
-	inField039: vars.transformedIncoming.inField039,
-	inField040: vars.transformedIncoming.inField040,
-	inField041: vars.transformedIncoming.inField041,
-	inField042: vars.transformedIncoming.inField042,
-	inField043: vars.transformedIncoming.inField043,
-	inField044: vars.transformedIncoming.inField044,
-	inField045: vars.transformedIncoming.inField045,
-	inField046: vars.transformedIncoming.inField046,
-	inField047: vars.transformedIncoming.inField047,
-	inField048: vars.transformedIncoming.inField048,
-	inField049: vars.transformedIncoming.inField049,
-	inField050: vars.transformedIncoming.inField050
-}]]></ee:set-payload>
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="incomingLoc" ><![CDATA[%dw 2.0
-output application/java
----
-{
-	emp_name: vars.locWithPay.LOC,
-	emp_skills: vars.locWithPay.u_CITY,
-	emp_phone: vars.locWithPay.u_DISTRICTID,
-	emp_email: vars.locWithPay.u_DISTRICTDESCRIPTION
-}
-//{
-//	emp_name: vars.locInstance.locIncoming.LOC,
-//	emp_skills: vars.locInstance.locIncoming.u_CITY,
-//	emp_phone: vars.locInstance.locIncoming.u_CITY,
-//	emp_email: vars.locInstance.locIncoming.u_DISTRICTDESCRIPTION
-//}]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-				</batch:step>
-				<batch:step name="process-transform-failures" doc:id="ae0bd244-771c-46fd-ac31-cdc32ef67991" acceptPolicy="ONLY_FAILURES">
-					<batch:aggregator doc:name="write-transform-failures-to-disk" doc:id="d2d01f3d-760d-4aac-9ec7-59b30974231a" size="500">
-						<logger level="INFO" doc:name="Logger" doc:id="5f8fe07d-809d-4516-b84e-ac6471bf55e9" message="Failed records: #[payload]" />
-						<ee:transform doc:name="Transform Message" doc:id="88c25529-5345-44d5-85a1-2a2412e4f6f7" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+						<error-handler >
+							<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
+								<set-variable value="#[error.exception.cause.target.detailMessage]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
+								<ee:transform doc:name="Transform Message" doc:id="826b9077-719a-44ce-ac13-1c0b778c426d" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
-var dbfail = "db failure"
 ---
-payload map(genericFailure, indexOfGenericFailures) ->
 {
-	"inFieldSeq": genericFailure.inFieldSeq,
-	"inField001": genericFailure.inField001,
-	"inField002": genericFailure.inField002,
-	"inField003": genericFailure.inField003,
-	"inField004": genericFailure.inField004,
-	"inField050": if(genericFailure.inField004 == "Error in transform") genericFailure.inField004 else dbfail
-	
+	inFieldSeq: payload.inFieldSeq,
+	inField001: payload.inField001,
+	inField002: payload.inField002,
+	inField003: payload.inField003,
+	inField004: payload.inField004,
+	inField050: vars.transformError
 }]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-						<file:write doc:name="Write" doc:id="c92a74ba-5b6a-4ca0-9cb6-cb91e68ea38c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".transformerrors.csv"]'/>
-					</batch:aggregator>
+									</ee:message>
+								</ee:transform>
+								<file:write doc:name="Write" doc:id="9de947d2-17d4-48f3-bd14-c35ff3d8349c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"} ++ ".xformerrors.csv"]' />
+							</on-error-propagate>
+						</error-handler>
+					</try>
 				</batch:step>
 			</batch:process-records>
 		</batch:job>
