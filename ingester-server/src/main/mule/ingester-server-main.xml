@@ -188,7 +188,7 @@ payload map(genericFailure, indexOfGenericFailures) ->
 					</java:invoke>
 						<error-handler >
 							<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-transform-errors-to-disk" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
-								<set-variable value="#[error.exception.cause.target.detailMessage]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
+								<set-variable value="#[error.description]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
 								<ee:transform doc:name="Transform Message" doc:id="826b9077-719a-44ce-ac13-1c0b778c426d" >
 									<ee:message >
 										<ee:set-payload ><![CDATA[%dw 2.0
