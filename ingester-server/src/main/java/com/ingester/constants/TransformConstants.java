@@ -4,6 +4,7 @@ public class TransformConstants {
 	public static class IngestionRules {
 		public static final String NONE = "NONE";
 		public static final String DATE = "DATE";
+		public static final String INTEGER = "INTEGER";
 		public static final String DECIMAL = "DECIMAL";
 		
 	}

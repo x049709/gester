@@ -17,7 +17,7 @@ import com.ingester.utils.TransformerUtils;
 
 public class GenericTransformer {
 	private GenericIncomingPayload genericIncoming;
-	
+
 	public GenericTransformer() {}
 
 	public GenericOutgoingPayload transformIncoming(GenericIncomingPayload genericIncoming) throws TransformException, NoSuchMethodException{
@@ -74,10 +74,10 @@ public class GenericTransformer {
 
 		int inFieldSeq = genericOutgoing.getinFieldSeq();
 		String requiredFlag = mapSheetForField.getREQUIRED_FLAG();
-		
+
 		try {
 			if (requiredFlag.equalsIgnoreCase(TransformConstants.MappingSheetRules.REQUIRED) && StringUtils.isEmpty(propertyValue)) {
-				String errorMsg = "Required field is empty for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", requiredFlag:" + requiredFlag;
+				String errorMsg = "Required field is empty for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + "EMPTY, requiredFlag:" + requiredFlag;
 				System.out.println(errorMsg);
 				throw new TransformException(errorMsg); 
 			}
@@ -95,7 +95,7 @@ public class GenericTransformer {
 						tUtils);
 			}
 			return;
-			
+
 		}
 		catch (Exception e) {
 			throw new TransformException(e.getMessage()); 			
@@ -119,19 +119,32 @@ public class GenericTransformer {
 			case TransformConstants.IngestionRules.DATE:
 				boolean isDateValid = GenericValidator.isDate(propertyValue, "MM/dd/yyyy", true);
 				if (!isDateValid) {
-					String errorMsg = "Error in date validation for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", ingestionRule:" + ingestionRule;
+					String errorMsg = "Error in date validation for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
 					System.out.println(errorMsg);
 					throw new TransformException(errorMsg); 
 				}
 				return;
 			case TransformConstants.IngestionRules.DECIMAL:
+				boolean isNumberADecimal = GenericValidator.isDouble(propertyValue);
+				if (!isNumberADecimal) {
+					String errorMsg = "Error in decimal validation for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
+					System.out.println(errorMsg);
+					throw new TransformException(errorMsg); 
+				}
+				return;
+			case TransformConstants.IngestionRules.INTEGER:
+				boolean isNumberAnInteger = GenericValidator.isInt(propertyValue);
+				if (!isNumberAnInteger) {
+					String errorMsg = "Error in integer validation for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
+					System.out.println(errorMsg);
+					throw new TransformException(errorMsg); 
+				}
 				return;
 			default:
-				String errorMsg = "No such ingestion rule for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", ingestionRule:" + ingestionRule;
+				String errorMsg = "No such ingestion rule for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
 				System.out.println(errorMsg);
 				throw new TransformException(errorMsg); 
 			}
-			
 		}
 		catch (Exception e) {
 			throw new TransformException(e.getMessage()); 			
