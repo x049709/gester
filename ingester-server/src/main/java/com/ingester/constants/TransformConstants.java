@@ -6,6 +6,7 @@ public class TransformConstants {
 		public static final String DATE = "DATE";
 		public static final String INTEGER = "INTEGER";
 		public static final String DECIMAL = "DECIMAL";
+		public static final String LOOKUP = "LOOKUP";
 		
 	}
 	public static class MappingSheetRules {

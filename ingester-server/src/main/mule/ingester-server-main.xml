@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 	<flow name="ingester-main-flow" doc:id="53c21ad3-8085-43f2-8f85-98098ea7cdd4" >
 		<http:listener doc:name="Listener" doc:id="9852c75d-bac5-43a5-9551-ee2f552f1eaa" config-ref="HTTP_Listener_Ingester_config" path="main" allowedMethods="GET"/>
 		<logger level="INFO" doc:name="Logger" doc:id="4ea28d9a-2f19-4def-99e5-5d9a43565e9d" message='ETA-INGESTER STARTING LOAD....  #["\n"] '/>
-		<set-variable value="#[attributes.queryParams.sourceEntity]" doc:name="Set Variable" doc:id="697d6890-f1a5-4b1e-a9d7-3f145a620d6f" variableName="sourceEntity" />
+		<set-variable value="#[attributes.queryParams.targetEntity]" doc:name="Set Variable" doc:id="697d6890-f1a5-4b1e-a9d7-3f145a620d6f" variableName="targetEntity" />
 		<java:invoke-static doc:name="Load parameter list" doc:id="eecb847d-742c-45fb-9c83-5c0672ce87e9" class="com.ingester.loaders.ParameterLoader" method="LoadParameterList(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">
 			<java:args><![CDATA[#[output application/java
 ---
@@ -60,7 +60,7 @@ output application/json
 		<db:select doc:name="select-mapping-sheet" doc:id="6ffaae11-5225-4009-92f7-8f04d511d353" config-ref="AzureSQLConfig">
 			<db:sql><![CDATA[${database.sql.select.mapping-sheet}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
-	"sourceEntity": vars.sourceEntity
+	"targetEntity": vars.targetEntity
 }]]]></db:input-parameters>
 		</db:select>
 		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="d3ffbd5c-8e05-4ea0-b695-795dfe2c972c" variableName="arrayListMappingSheet" />
@@ -73,6 +73,9 @@ output application/json
 	<sub-flow name="load-reference-data" doc:id="8a588923-4ab1-44d2-bdf2-e90dab18149f" >
 		<db:select doc:name="select-reference-data" doc:id="0e443da5-7c9a-4965-a5c8-fb627db2822b" config-ref="AzureSQLConfig">
 			<db:sql><![CDATA[${database.sql.select.ref-data}]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"targetEntity": vars.targetEntity
+}]]]></db:input-parameters>
 		</db:select>
 		<java:invoke-static doc:name="load-reference-data" doc:id="9d80697c-a22a-4899-bc5c-73388b07a40a" class="com.ingester.loaders.StaticReferenceDataLoader" method="loadReferenceDataArrayList(java.util.ArrayList)">
 			<java:args><![CDATA[#[output application/java
@@ -152,7 +155,7 @@ payload map (generic_in, indexOfGenericIn) ->
 					<batch:aggregator doc:name="process-aggregated-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
 						<try doc:name="Try" doc:id="ce41634f-8cdb-4a9b-88eb-d256c9d6b8db" transactionalAction="ALWAYS_BEGIN">
 							<db:bulk-insert doc:name="insert-aggregated-transformed-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
-								<db:sql ><![CDATA[${database.sql.insert.azure-loc-all-67}]]></db:sql>
+								<db:sql ><![CDATA[${database.sql.insert.azure-loc-all-40}]]></db:sql>
 							</db:bulk-insert>
 							<error-handler >
 								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >

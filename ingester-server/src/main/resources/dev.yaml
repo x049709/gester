@@ -4,8 +4,9 @@ database:
   url: "jdbc:sqlserver://azureserverfree.database.windows.net:1433;database=azureserverfreetwo;user=x049709@azureserverfree;password=Aliaga00;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
   sql:
     select:
-      ref-data: "select  * from SalesLT.RefData"
-      mapping-sheet: "select  * from SalesLT.MappingSheet where TRIM(SOURCE_ENTITY) = :sourceEntity"
+      ref-data-all: "select  * from SalesLT.RefData"
+      ref-data: "select REF_DATA_CLASS + '|' + REF_DATA_CLASS_KEY as REF_DATA_KEY, REF_DATA_CLASS_VALUE FROM SalesLT.RefData where TRIM(DEST_TABLE_NAME) = :targetEntity"
+      mapping-sheet: "select  * from SalesLT.MappingSheet where TRIM(TARGET_ENTITY) = :targetEntity"
     insert:
       emp-nine: "insert into SalesLt.EmpNine (EmpPhone, EmpName, EmpSkills, EmpEmail) values (:inField001, :inField002, :inField003, :inField004)"
       #emp-nine-bad: "insert into SalesLt.EmpNine (EmpID, EmpPhone, EmpName, EmpSkills, EmpEmail) values (1, :inField001, :inField002, :inField003, :inField004)"

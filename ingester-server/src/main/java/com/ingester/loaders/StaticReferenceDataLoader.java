@@ -17,7 +17,7 @@ public class StaticReferenceDataLoader {
     		String hMapValue = null;
     		Map<String, String> m = (Map<String,String>)row;
         	for (Map.Entry entry : m.entrySet()) {
-        		if (entry.getKey().equals("REF_DATA_CLASS_KEY")) {
+        		if (entry.getKey().equals("REF_DATA_KEY")) {
             			hMapKey = (String)entry.getValue();
             			//System.out.println(entry.getKey() + ", " + hMapKey);
        		}
@@ -30,7 +30,7 @@ public class StaticReferenceDataLoader {
     			referenceDataMap.put(hMapKey, hMapValue);
     		}
         }
-		//System.out.println("Reference data loaded:" + referenceDataMap);
+		System.out.println("Reference data loaded:" + referenceDataMap);
 	}
         
 }

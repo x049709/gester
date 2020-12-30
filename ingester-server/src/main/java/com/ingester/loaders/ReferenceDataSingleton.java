@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import com.ingester.beans.MappingSheet;
-
 public final class ReferenceDataSingleton implements Iterable<String>, Serializable {
 
 	private static final long serialVersionUID = 5458295846058786100L;

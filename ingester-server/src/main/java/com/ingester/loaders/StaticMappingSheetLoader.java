@@ -65,7 +65,7 @@ public class StaticMappingSheetLoader {
     			//System.out.println("Mapping row loaded: KEY:" + hMapKey + ", VALUE:" + mSheet.toString());
     		}
         }
-		//System.out.println("Mapping sheet loaded:" + mappingSheetDataMap.toString());
+		System.out.println("Mapping sheet loaded:" + mappingSheetDataMap.toString());
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.ingester.transformers;
 
 import java.util.HashMap;
-import java.util.Locale;
 
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.util.StringUtils;
@@ -17,6 +16,14 @@ import com.ingester.utils.TransformerUtils;
 
 public class GenericTransformer {
 	private GenericIncomingPayload genericIncoming;
+	
+
+	public GenericIncomingPayload getGenericIncoming() {
+		return genericIncoming;
+	}
+	public void setGenericIncoming(GenericIncomingPayload genericIncoming) {
+		this.genericIncoming = genericIncoming;
+	}
 
 	public GenericTransformer() {}
 
@@ -28,6 +35,8 @@ public class GenericTransformer {
 		System.out.println("Incoming record" + genericIncoming.toString());
 		TransformerUtils tUtils = new TransformerUtils();
 
+		//Copy the incoming payload to the instance
+		this.setGenericIncoming(genericIncoming);
 		//Copy the sequence number from input to output
 		String inFieldSeq = "inFieldSeq";
 		int inFieldSeqValue = tUtils.getIntProperty(inFieldSeq, genericIncoming);
@@ -87,7 +96,8 @@ public class GenericTransformer {
 
 			String ingestionRule = mapSheetForField.getINGESTION_RULE();
 			if (!ingestionRule.equalsIgnoreCase(TransformConstants.IngestionRules.NONE)) {
-				this.executeIngestionRule(refDataFromSingleton, 
+				this.executeIngestionRule(refDataFromSingleton,
+						mapSheetForField,
 						propertyName, 
 						propertyValue, 
 						ingestionRule, 
@@ -104,6 +114,7 @@ public class GenericTransformer {
 	}
 
 	private void executeIngestionRule(HashMap<String, String> refDataFromSingleton, 
+			MappingSheet mapSheetForField, 
 			String propertyName, 
 			String propertyValue, 
 			String ingestionRule, 
@@ -140,6 +151,17 @@ public class GenericTransformer {
 					throw new TransformException(errorMsg); 
 				}
 				return;
+			case TransformConstants.IngestionRules.LOOKUP:
+				String targetColumnName = mapSheetForField.getTARGET_COL_NAME().trim();
+				String translatedField = this.translateField(targetColumnName, propertyValue, refDataFromSingleton);
+				if (StringUtils.isEmpty(translatedField)) {
+					String errorMsg = "Error in translating for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
+					System.out.println(errorMsg);
+					throw new TransformException(errorMsg); 
+				} else {
+					tUtils.setStringProperty(propertyName, translatedField, genericOutgoing);		
+					return;
+				}
 			default:
 				String errorMsg = "No such ingestion rule for record:" + inFieldSeq + ", field:" + propertyName + "=>" + propertyValue + ", ingestionRule:" + ingestionRule;
 				System.out.println(errorMsg);
@@ -151,6 +173,16 @@ public class GenericTransformer {
 		}	
 
 	}
+
+	private String translateField(String targetColumnName, 
+			String propertyValue,
+			HashMap<String, String> refDataFromSingleton) {
+
+		String refDataKey = new StringBuilder().append(targetColumnName.trim()).append("|").append(propertyValue.trim()).toString();
+		String translatedField = refDataFromSingleton.get(refDataKey);
+		return translatedField;
+	}
+
 
 }
 
