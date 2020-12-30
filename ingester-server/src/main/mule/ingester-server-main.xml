@@ -83,7 +83,7 @@ output application/json
 		</java:invoke-static>
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
-		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_valid_data.csv"/>
+		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data.csv"/>
 		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
 		<ee:transform doc:name="Transform Message" doc:id="4686289d-73ae-4d33-9ff8-d488c951ae25" >
 			<ee:message >
@@ -165,11 +165,11 @@ output application/json
 payload map(genericFailure, indexOfGenericFailures) ->
 {
 	inFieldSeq: genericFailure.inFieldSeq,
+	inFieldMsg: vars.dbError,
 	inField001: genericFailure.inField001,
 	inField002: genericFailure.inField002,
 	inField003: genericFailure.inField003,
-	inField004: genericFailure.inField004,
-	inField050: vars.dbError 
+	inField004: genericFailure.inField004
 }]]></ee:set-payload>
 										</ee:message>
 									</ee:transform>
@@ -196,11 +196,11 @@ output application/json
 ---
 {
 	inFieldSeq: payload.inFieldSeq,
+	inFieldMsg: vars.transformError,
 	inField001: payload.inField001,
 	inField002: payload.inField002,
 	inField003: payload.inField003,
-	inField004: payload.inField004,
-	inField050: vars.transformError
+	inField004: payload.inField004
 }]]></ee:set-payload>
 									</ee:message>
 								</ee:transform>

@@ -29,9 +29,13 @@ public class GenericTransformer {
 		TransformerUtils tUtils = new TransformerUtils();
 
 		//Copy the sequence number from input to output
-		String intPropertyName = "inFieldSeq";
-		int intPropertyValue = tUtils.getIntProperty(intPropertyName, genericIncoming);
-		tUtils.setIntProperty(intPropertyName, intPropertyValue, genericOutgoing);		
+		String inFieldSeq = "inFieldSeq";
+		int inFieldSeqValue = tUtils.getIntProperty(inFieldSeq, genericIncoming);
+		tUtils.setIntProperty(inFieldSeq, inFieldSeqValue, genericOutgoing);		
+		//Set the message in output to 'NONE'
+		String inFieldMsg = "inFieldMsg";
+		String inFieldMsgValue = "NONE";
+		tUtils.setStringProperty(inFieldMsg, inFieldMsgValue, genericOutgoing);		
 
 
 		//Loop thru the rest of the input fields, transforming as required in the mapping sheet
@@ -43,83 +47,97 @@ public class GenericTransformer {
 			tUtils.setStringProperty(propertyName, propertyValue, genericOutgoing);		
 			MappingSheet mapSheetForField = mapSheetFromSingleton.get(propertyName);
 			//Do the transformation
-			this.transformOneIncomingField(refDataFromSingleton, 
+			String message = this.transformOneIncomingField(refDataFromSingleton, 
 					propertyName, 
 					propertyValue, 
 					mapSheetForField, 
 					genericOutgoing, 
 					tUtils);
+			if (!message.equalsIgnoreCase(inFieldMsgValue)) { 
+				String errorMsg = message; 
+				System.out.println(errorMsg);
+				throw new TransformException(errorMsg); 
+			}
+			
 			i++;
+			
 		};
 
 		//BEGIN these are POC lines
-		if (genericIncoming.getInField001().equalsIgnoreCase("LOC1") || genericIncoming.getInField001().equalsIgnoreCase("LOC5") ) { 
-			String errorMsg = "BADREC"; 
-			genericOutgoing.setinField040(errorMsg); 
-			throw new TransformException(errorMsg); 
-		}
+		//if (genericIncoming.getInField001().equalsIgnoreCase("LOC1") || genericIncoming.getInField001().equalsIgnoreCase("LOC5") ) { 
+		//	String errorMsg = "BADREC"; 
+		//	System.out.println(errorMsg);
+		//	throw new TransformException(errorMsg); 
+		//}
 		//END these are POC lines
 
 		return genericOutgoing;
 	}
 
-	private void transformOneIncomingField(HashMap<String, String> refDataFromSingleton, 
+	private String transformOneIncomingField(HashMap<String, String> refDataFromSingleton, 
 			String propertyName, 
 			String propertyValue, 
 			MappingSheet mapSheetForField, 
 			GenericOutgoingPayload genericOutgoing, 
 			TransformerUtils tUtils) throws NoSuchMethodException, TransformException {
 
+		int inFieldSeq = genericOutgoing.getinFieldSeq();
+		String inFieldMsg = "NONE";
 		String requiredFlag = mapSheetForField.getREQUIRED_FLAG();
 		if (requiredFlag.equalsIgnoreCase(TransformConstants.MappingSheetRules.REQUIRED) && StringUtils.isEmpty(propertyValue)) {
-			System.out.println("Incoming field value for field: " + propertyName + ": " + propertyValue + ", requiredFlag:" + requiredFlag);
-			String errorMsg = "EMPTY"; 
-			genericOutgoing.setinField040(errorMsg); 
-			throw new TransformException(errorMsg); 			
+			String errorMsg = "Required field is empty for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", requiredFlag:" + requiredFlag;
+			System.out.println(errorMsg);
+			inFieldMsg = errorMsg; 			
+			return inFieldMsg;
 		}
 		if (requiredFlag.equalsIgnoreCase(TransformConstants.MappingSheetRules.OPTIONAL) && StringUtils.isEmpty(propertyValue)) {
-			return;
+			return inFieldMsg;
 		}
 
 		String ingestionRule = mapSheetForField.getINGESTION_RULE();	
 		if (!ingestionRule.equalsIgnoreCase(TransformConstants.IngestionRules.NONE)) {
-			this.executeIngestionRule(refDataFromSingleton, 
+			inFieldMsg = this.executeIngestionRule(refDataFromSingleton, 
 					propertyName, 
 					propertyValue, 
 					ingestionRule, 
 					genericOutgoing,
 					tUtils);
 		}
+		return inFieldMsg;
+		
 	}
 
-	private void executeIngestionRule(HashMap<String, String> refDataFromSingleton, 
+	private String executeIngestionRule(HashMap<String, String> refDataFromSingleton, 
 			String propertyName, 
 			String propertyValue, 
 			String ingestionRule, 
 			GenericOutgoingPayload genericOutgoing, 
 			TransformerUtils tUtils) throws NoSuchMethodException, TransformException {
 
+		int inFieldSeq = genericOutgoing.getinFieldSeq();
+		String inFieldMsg = "NONE";
 		switch (ingestionRule.trim()) {
 		case TransformConstants.IngestionRules.NONE:
-			break;
-		case TransformConstants.IngestionRules.DATE_MM_SL_DD_SL_YYYY:
+			return inFieldMsg;
+		case TransformConstants.IngestionRules.DATE:
 			boolean isDateValid = GenericValidator.isDate(propertyValue, Locale.ENGLISH);
 			if (!isDateValid) {
-				System.out.println("Incoming field value for field: " + propertyName + ": " + propertyValue + ", ingestionRule:" + ingestionRule);
-				String errorMsg = "BADDATE"; 
-				genericOutgoing.setinField040(errorMsg); 
-				throw new TransformException(errorMsg); 							
+				String errorMsg = "Error in date validation for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", ingestionRule:" + ingestionRule;
+				System.out.println(errorMsg);
+				inFieldMsg = errorMsg; 							
+				return inFieldMsg;
 			}
 			break;
 		case TransformConstants.IngestionRules.DECIMAL:
 			break;
 		default:
-			String errorMsg = "BADRULE"; 
-			genericOutgoing.setinField040(errorMsg); 
-			throw new TransformException(errorMsg); 			
+			String errorMsg = "No such ingestion rule for record:" + inFieldSeq + ",field:" + propertyName + "," + propertyValue + ", ingestionRule:" + ingestionRule;
+			System.out.println(errorMsg);
+			inFieldMsg = errorMsg; 							
+			return inFieldMsg;
 		}
 		
-		return;
+		return inFieldMsg;
 	}
 
 }
