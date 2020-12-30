@@ -43,6 +43,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 		<flow-ref doc:name="load-reference-data-flow" doc:id="35c4a353-8464-4428-82ea-438540a653bf" name="load-reference-data"/>
 		<java:new doc:name="new-transformer" doc:id="24f4ef1c-27ff-4f77-a5c7-2003f05c0b61" class="com.ingester.transformers.GenericTransformer" constructor="GenericTransformer()" target="genericTransformerInstance">
 		</java:new>
+		<java:new doc:name="new-bulk-transformer" doc:id="bf0d8b27-88a5-40bf-b136-e50b3ed94afa" class="com.ingester.transformers.BulkGenericTransformer" constructor="BulkGenericTransformer()" target="bulkGenericTransformerInstance"/>
 		<flow-ref doc:name="load-incoming-records-flow" doc:id="fe2cc247-e54e-4b02-96f5-a9b64462a3a4" name="load-incoming-data"/>
 		<ee:transform doc:name="Transform Message" doc:id="0746ca50-1f5e-4555-81b2-88abfcd9b3ba" >
 			<ee:message >
@@ -149,6 +150,15 @@ payload map (generic_in, indexOfGenericIn) ->
 } as Object {class: "com.ingester.beans.GenericIncomingPayload"}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5e87e865-35c6-46fb-a6eb-e74f1670d963" />
+		<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncoming(java.util.ArrayList)" target="bulkTransformedIncoming">
+			<java:args ><![CDATA[#[output application/java
+---
+{
+	incomingDataArrayListIn: payload
+}]]]></java:args>
+		</java:invoke>
+		<logger level="INFO" doc:name="Logger" doc:id="36653f0b-619d-40c0-88cf-4c058d8b6969" />
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" acceptPolicy="ALL">
