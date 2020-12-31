@@ -12,47 +12,37 @@ import com.ingester.constants.TransformConstants;
 import com.ingester.exceptions.TransformException;
 import com.ingester.loaders.MappingSheetSingleton;
 import com.ingester.loaders.ReferenceDataSingleton;
-import com.ingester.utils.TransformerUtils;
+import com.ingester.utils.GenericValidatorUtils;
 
-public class GenericTransformer {
-	private IngesterIncomingPayload genericIncoming;
-	
+public class GenericRecordValidator {	
 
-	public IngesterIncomingPayload getGenericIncoming() {
-		return genericIncoming;
-	}
-	public void setGenericIncoming(IngesterIncomingPayload genericIncoming) {
-		this.genericIncoming = genericIncoming;
-	}
+	public GenericRecordValidator() {}
 
-	public GenericTransformer() {}
-
-	public IngesterOutgoingPayload transformIncoming(IngesterIncomingPayload genericIncoming) throws TransformException, NoSuchMethodException{
+	public IngesterOutgoingPayload transformIncoming(IngesterIncomingPayload incomingPayload) throws TransformException, NoSuchMethodException{
 		HashMap<String, String> refDataFromSingleton = ReferenceDataSingleton.getInstance().getReferenceDataMap();
 		HashMap<String, MappingSheet> mapSheetFromSingleton = MappingSheetSingleton.getInstance().getMappingSheetDataMap();
-		IngesterOutgoingPayload genericOutgoing = new IngesterOutgoingPayload();
+		IngesterOutgoingPayload outgoingPayload = new IngesterOutgoingPayload();
 
-		System.out.println("Incoming record" + genericIncoming.toString());
-		TransformerUtils tUtils = new TransformerUtils();
+		System.out.println("Incoming record" + incomingPayload.toString());
+		GenericValidatorUtils vUtils = new GenericValidatorUtils();
 
 		//Copy the incoming payload to the instance
-		this.setGenericIncoming(genericIncoming);
 		//Copy the sequence number from input to output
 		String inFieldSeq = "inFieldSeq";
-		int inFieldSeqValue = tUtils.getIntProperty(inFieldSeq, genericIncoming);
-		tUtils.setIntProperty(inFieldSeq, inFieldSeqValue, genericOutgoing);		
+		int inFieldSeqValue = vUtils.getIntProperty(inFieldSeq, incomingPayload);
+		vUtils.setIntProperty(inFieldSeq, inFieldSeqValue, outgoingPayload);	
 		//Set the message in output to 'NONE'
 		String inFieldMsg = "inFieldMsg";
 		String inFieldMsgValue = "NONE";
-		tUtils.setStringProperty(inFieldMsg, inFieldMsgValue, genericOutgoing);		
+		vUtils.setStringProperty(inFieldMsg, inFieldMsgValue, outgoingPayload);		
 
 		//Loop thru the rest of the input fields, transforming as required in the mapping sheet
 		int i=1;
 		while (i<=mapSheetFromSingleton.size()) {
 			String propertyName = String.format("inField%03d", i);
-			String propertyValue = tUtils.getStringProperty(propertyName, genericIncoming);
+			String propertyValue = vUtils.getStringProperty(propertyName, incomingPayload);
 			//First, initialize the outgoing propertyValue to the incoming propertyValue
-			tUtils.setStringProperty(propertyName, propertyValue, genericOutgoing);		
+			vUtils.setStringProperty(propertyName, propertyValue, outgoingPayload);		
 			MappingSheet mapSheetForField = mapSheetFromSingleton.get(propertyName);
 			//Then, do the transformation
 			try {
@@ -60,8 +50,8 @@ public class GenericTransformer {
 						propertyName, 
 						propertyValue, 
 						mapSheetForField, 
-						genericOutgoing, 
-						tUtils);
+						outgoingPayload, 
+						vUtils);
 			}
 			catch(Exception e) {
 				throw new TransformException(e.getMessage()); 
@@ -71,17 +61,17 @@ public class GenericTransformer {
 
 		};
 
-		return genericOutgoing;
+		return outgoingPayload;
 	}
 
 	private void transformOneIncomingField(HashMap<String, String> refDataFromSingleton, 
 			String propertyName, 
 			String propertyValue, 
 			MappingSheet mapSheetForField, 
-			IngesterOutgoingPayload genericOutgoing, 
-			TransformerUtils tUtils) throws NoSuchMethodException, TransformException {
+			IngesterOutgoingPayload outgoingPayload, 
+			GenericValidatorUtils vUtils) throws NoSuchMethodException, TransformException {
 
-		int inFieldSeq = genericOutgoing.getInFieldSeq();
+		int inFieldSeq = outgoingPayload.getInFieldSeq();
 		String requiredFlag = mapSheetForField.getREQUIRED_FLAG();
 
 		try {
@@ -101,8 +91,8 @@ public class GenericTransformer {
 						propertyName, 
 						propertyValue, 
 						ingestionRule, 
-						genericOutgoing,
-						tUtils);
+						outgoingPayload,
+						vUtils);
 			}
 			return;
 
@@ -118,11 +108,10 @@ public class GenericTransformer {
 			String propertyName, 
 			String propertyValue, 
 			String ingestionRule, 
-			IngesterOutgoingPayload genericOutgoing, 
-			TransformerUtils tUtils) throws NoSuchMethodException, TransformException {
+			IngesterOutgoingPayload outgoingPayload, 
+			GenericValidatorUtils vUtils) throws NoSuchMethodException, TransformException {
 
-		int inFieldSeq = genericOutgoing.getInFieldSeq();
-
+		int inFieldSeq = outgoingPayload.getInFieldSeq();
 		try {
 			switch (ingestionRule.trim()) {
 			case TransformConstants.IngestionRules.NONE:
@@ -159,7 +148,7 @@ public class GenericTransformer {
 					System.out.println(errorMsg);
 					throw new TransformException(errorMsg); 
 				} else {
-					tUtils.setStringProperty(propertyName, translatedField, genericOutgoing);		
+					vUtils.setStringProperty(propertyName, translatedField, outgoingPayload);		
 					return;
 				}
 			default:

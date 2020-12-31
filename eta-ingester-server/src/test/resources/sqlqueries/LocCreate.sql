@@ -1,7 +1,6 @@
 --------------------------------------------------------
 --  DDL for Table LOC
 --------------------------------------------------------
---drop table "SalesLt"."LOC";
 
   CREATE TABLE "SalesLt"."LOC" 
    (
@@ -28,7 +27,7 @@
 	"SEQINTLASTEXPORTEDTOSEQ" DATE DEFAULT '01/01/1970', 
 	"SEQINTLASTIMPORTEDFROMSEQ" DATE DEFAULT '01/01/1970', 
 	"POSTALCODE" VARCHAR(10) DEFAULT 0, 
-	"COUNTRY" VARCHAR(255) DEFAULT 0, 
+	"COUNTRY" VARCHAR(20) DEFAULT 0, 
 	"CURRENCY" VARCHAR(5) DEFAULT ' ', 
 	"WDDAREA" VARCHAR(50) DEFAULT ' ', 
 	"BORROWINGPCT" NUMERIC(30,10) DEFAULT 0, 

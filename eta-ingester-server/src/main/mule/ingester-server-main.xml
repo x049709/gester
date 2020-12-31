@@ -41,7 +41,7 @@ http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/jav
 		</java:invoke-static>
 		<flow-ref doc:name="load-mapping-sheet-flow" doc:id="c1b0ac78-64a1-48c6-80bb-69250571a0c4" name="load-mapping-sheet"/>
 		<flow-ref doc:name="load-reference-data-flow" doc:id="35c4a353-8464-4428-82ea-438540a653bf" name="load-reference-data"/>
-		<java:new doc:name="new-transformer" doc:id="24f4ef1c-27ff-4f77-a5c7-2003f05c0b61" class="com.ingester.transformers.GenericTransformer" constructor="GenericTransformer()" target="genericTransformerInstance">
+		<java:new doc:name="new-validator" doc:id="24f4ef1c-27ff-4f77-a5c7-2003f05c0b61" class="com.ingester.transformers.GenericRecordValidator" constructor="GenericRecordValidator()" target="genericValidatorInstance">
 		</java:new>
 		<java:new doc:name="new-bulk-transformer" doc:id="bf0d8b27-88a5-40bf-b136-e50b3ed94afa" class="com.ingester.transformers.BulkGenericTransformer" constructor="BulkGenericTransformer()" target="bulkGenericTransformerInstance"/>
 		<flow-ref doc:name="load-incoming-records-flow" doc:id="fe2cc247-e54e-4b02-96f5-a9b64462a3a4" name="load-incoming-data"/>
@@ -88,151 +88,77 @@ output application/json
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
 		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data.csv"/>
-		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
-		<ee:transform doc:name="Transform Message" doc:id="f12e558e-b8f1-4dd6-9ea8-56dd3e4675bf" >
+		<ee:transform doc:name="Transform Message" doc:id="dabccbac-0b49-49dd-9a56-8a24c26b6850" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-payload map (ingester_in, indexOfIngesterIn) ->
+payload map (generic_in, indexOfGenericIn) ->
 {
-	inFieldSeq: indexOfIngesterIn+1,
-	inField001: ingester_in.inField001,
-	inField002: ingester_in.inField002,
-	inField003: ingester_in.inField003,
-	inField004: ingester_in.inField004,
-	inField005: ingester_in.inField005,
-	inField006: ingester_in.inField006,
-	inField007: ingester_in.inField007,
-	inField008: ingester_in.inField008,
-	inField009: ingester_in.inField009,
-	inField010: ingester_in.inField010,
-	inField011: ingester_in.inField011,
-	inField012: ingester_in.inField012,
-	inField013: ingester_in.inField013,
-	inField014: ingester_in.inField014,
-	inField015: ingester_in.inField015,
-	inField016: ingester_in.inField016,
-	inField017: ingester_in.inField017,
-	inField018: ingester_in.inField018,
-	inField019: ingester_in.inField019,
-	inField020: ingester_in.inField020,
-	inField021: ingester_in.inField021,
-	inField022: ingester_in.inField022,
-	inField023: ingester_in.inField023,
-	inField024: ingester_in.inField024,
-	inField025: ingester_in.inField025,
-	inField026: ingester_in.inField026,
-	inField027: ingester_in.inField027,
-	inField028: ingester_in.inField028,
-	inField029: ingester_in.inField029,
-	inField030: ingester_in.inField030,
-	inField031: ingester_in.inField031,
-	inField032: ingester_in.inField032,
-	inField033: ingester_in.inField033,
-	inField034: ingester_in.inField034,
-	inField035: ingester_in.inField035,
-	inField036: ingester_in.inField036,
-	inField037: ingester_in.inField037,
-	inField038: ingester_in.inField038,
-	inField039: ingester_in.inField039,
-	inField040: ingester_in.inField040,
-	inField041: ingester_in.inField041,
-	inField042: ingester_in.inField042,
-	inField043: ingester_in.inField043,
-	inField044: ingester_in.inField044,
-	inField045: ingester_in.inField045,
-	inField046: ingester_in.inField046,
-	inField047: ingester_in.inField047,
-	inField048: ingester_in.inField048,
-	inField049: ingester_in.inField049,
-	inField050: ingester_in.inField050,
-	inField001: ingester_in.inField051,
-	inField002: ingester_in.inField052,
-	inField003: ingester_in.inField053,
-	inField004: ingester_in.inField054,
-	inField005: ingester_in.inField055,
-	inField006: ingester_in.inField056,
-	inField007: ingester_in.inField057,
-	inField008: ingester_in.inField058,
-	inField009: ingester_in.inField059,
-	inField010: ingester_in.inField060,
-	inField011: ingester_in.inField061,
-	inField012: ingester_in.inField062,
-	inField013: ingester_in.inField063,
-	inField014: ingester_in.inField064,
-	inField015: ingester_in.inField065,
-	inField016: ingester_in.inField066,
-	inField017: ingester_in.inField067,
-	inField018: ingester_in.inField068,
-	inField019: ingester_in.inField069,
-	inField020: ingester_in.inField070,
-	inField021: ingester_in.inField071,
-	inField022: ingester_in.inField072,
-	inField023: ingester_in.inField073,
-	inField024: ingester_in.inField074,
-	inField025: ingester_in.inField075,
-	inField026: ingester_in.inField076,
-	inField027: ingester_in.inField077,
-	inField028: ingester_in.inField078,
-	inField029: ingester_in.inField079,
-	inField030: ingester_in.inField080,
-	inField031: ingester_in.inField081,
-	inField032: ingester_in.inField082,
-	inField033: ingester_in.inField083,
-	inField034: ingester_in.inField084,
-	inField035: ingester_in.inField085,
-	inField036: ingester_in.inField086,
-	inField037: ingester_in.inField087,
-	inField038: ingester_in.inField088,
-	inField039: ingester_in.inField089,
-	inField040: ingester_in.inField090,
-	inField041: ingester_in.inField091,
-	inField042: ingester_in.inField092,
-	inField043: ingester_in.inField093,
-	inField044: ingester_in.inField094,
-	inField045: ingester_in.inField095,
-	inField046: ingester_in.inField096,
-	inField047: ingester_in.inField097,
-	inField048: ingester_in.inField098,
-	inField049: ingester_in.inField099,
-	inField050: ingester_in.inField100,
-	inFieldSeq: ingester_in.inFieldMsg
+	inFieldSeq: indexOfGenericIn+1,
+	inField001: generic_in.inField001,
+	inField002: generic_in.inField002,
+	inField003: generic_in.inField003,
+	inField004: generic_in.inField004,
+	inField005: generic_in.inField005,
+	inField006: generic_in.inField006,
+	inField007: generic_in.inField007,
+	inField008: generic_in.inField008,
+	inField009: generic_in.inField009,
+	inField010: generic_in.inField010,
+	inField011: generic_in.inField011,
+	inField012: generic_in.inField012,
+	inField013: generic_in.inField013,
+	inField014: generic_in.inField014,
+	inField015: generic_in.inField015,
+	inField016: generic_in.inField016,
+	inField017: generic_in.inField017,
+	inField018: generic_in.inField018,
+	inField019: generic_in.inField019,
+	inField020: generic_in.inField020,
+	inField021: generic_in.inField021,
+	inField022: generic_in.inField022,
+	inField023: generic_in.inField023,
+	inField024: generic_in.inField024,
+	inField025: generic_in.inField025,
+	inField026: generic_in.inField026,
+	inField027: generic_in.inField027,
+	inField028: generic_in.inField028,
+	inField029: generic_in.inField029,
+	inField030: generic_in.inField030,
+	inField031: generic_in.inField031,
+	inField032: generic_in.inField032,
+	inField033: generic_in.inField033,
+	inField034: generic_in.inField034,
+	inField035: generic_in.inField035,
+	inField036: generic_in.inField036,
+	inField037: generic_in.inField037,
+	inField038: generic_in.inField038,
+	inField039: generic_in.inField039,
+	inField040: generic_in.inField040,
+	inField041: generic_in.inField041,
+	inField042: generic_in.inField042,
+	inField043: generic_in.inField043,
+	inField044: generic_in.inField044,
+	inField045: generic_in.inField045,
+	inField046: generic_in.inField046,
+	inField047: generic_in.inField047,
+	inField048: generic_in.inField048,
+	inField049: generic_in.inField049,
+	inField050: generic_in.inField050,
+	inField050: generic_in.inField051
 	
 } as Object {class: "com.ingester.beans.IngesterIncomingPayload"}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="e79a57ea-9a0c-4c6c-8ce6-ce7539a8c3cb" />
-		<try doc:name="Try" doc:id="69ecfd24-30ac-47a7-b1fa-379520d5c92c" >
-			<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncoming(java.util.ArrayList)" target="bulkTransformedIncoming">
-			<java:args><![CDATA[#[output application/java
+		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
+		<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncoming(java.util.ArrayList)" target="bulkTransformedIncoming">
+			<java:args ><![CDATA[#[output application/java
 ---
 {
 	incomingDataArrayListIn: payload
 }]]]></java:args>
 		</java:invoke>
-			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-bulk-transform-errors" doc:id="ead6b1ae-9e8e-419a-8bd1-3bfad0d953d3" >
-					<set-variable value="#[error.description]" doc:name="Set Variable" doc:id="464052ef-e1d0-4951-a83f-ab645c44fa35" variableName="bulkTransformError" />
-					<ee:transform doc:name="Transform Message" doc:id="aa93352c-33eb-40fa-ab90-c8853a79b907" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	inFieldSeq: payload.inFieldSeq,
-	inFieldMsg: vars.transformError,
-	inField001: payload.inField001,
-	inField002: payload.inField002,
-	inField003: payload.inField003,
-	inField004: payload.inField004
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<file:write doc:name="Write" doc:id="1c83ec41-3239-4a46-80ac-4b621889debb" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ ".transformerrors.json"]' mode="APPEND" />
-				</on-error-propagate>
-			</error-handler>
-		</try>
 		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="1000" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" acceptPolicy="ALL">
@@ -256,7 +182,8 @@ payload map(genericFailure, indexOfGenericFailures) ->
 	inField001: genericFailure.inField001,
 	inField002: genericFailure.inField002,
 	inField003: genericFailure.inField003,
-	inField004: genericFailure.inField004
+	inField004: genericFailure.inField004,
+	inFieldLast: payload.inFieldMsg
 }]]></ee:set-payload>
 										</ee:message>
 									</ee:transform>
@@ -266,11 +193,11 @@ payload map(genericFailure, indexOfGenericFailures) ->
 						</try>
 					</batch:aggregator>
 					<try doc:name="Try" doc:id="b720bc35-1bd6-4f7a-99a5-c897c51374e1" >
-						<java:invoke doc:name="validate-and-transform-one-record" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericTransformerInstance]" class="com.ingester.transformers.GenericTransformer" target="transformedIncoming" method="transformIncoming(com.ingester.beans.IngesterIncomingPayload)">
+						<java:invoke doc:name="validate-one-record" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericValidatorInstance]" class="com.ingester.transformers.GenericRecordValidator" target="transformedIncoming" method="transformIncoming(com.ingester.beans.IngesterIncomingPayload)">
 						<java:args><![CDATA[#[output application/java
 ---
 {
-	genericIncoming: payload
+	incomingPayload: payload
 }]]]></java:args>
 					</java:invoke>
 						<error-handler >
@@ -287,7 +214,8 @@ output application/json
 	inField001: payload.inField001,
 	inField002: payload.inField002,
 	inField003: payload.inField003,
-	inField004: payload.inField004
+	inField004: payload.inField004,
+	inFieldLast: payload.inFieldMsg
 }]]></ee:set-payload>
 									</ee:message>
 								</ee:transform>
