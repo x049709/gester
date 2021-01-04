@@ -100,7 +100,7 @@ public class BulkGenericTransformer {
 		String requiredFlag = mapSheetForField.getREQUIRED_FLAG().trim();
 		String ingestionRule = mapSheetForField.getINGESTION_RULE().trim();
 		String sourcePropertyName = mapSheetForField.getSOURCE_COL_NAME().trim();
-		String genericAndSourceFieldName = new StringBuilder().append(sourcePropertyName).append("|").append(genericPropertyName).toString();
+		String genericAndSourceFieldName = new StringBuilder().append(sourcePropertyName).append("/").append(genericPropertyName).toString();
 
 		try {
 			if (requiredFlag.equalsIgnoreCase(TransformConstants.MappingSheetRules.REQUIRED) && StringUtils.isEmpty(propertyValue)) {
@@ -115,7 +115,7 @@ public class BulkGenericTransformer {
 				}
 			}
 
-			if (!ingestionRule.equalsIgnoreCase(TransformConstants.IngestionRules.NONE)) {
+			if (!ingestionRule.equalsIgnoreCase(TransformConstants.IngestionRules.STRING)) {
 				this.executeIngestionRule(ingesterIncoming, mapSheetForField, genericPropertyName, sourcePropertyName, propertyValue, genericAndSourceFieldName, ingestionRule);
 			}
 			return;
@@ -138,7 +138,7 @@ public class BulkGenericTransformer {
 		int inFieldSeq = ingesterIncoming.getInFieldSeq();
 		try {
 			switch (ingestionRule.trim()) {
-			case TransformConstants.IngestionRules.NONE:
+			case TransformConstants.IngestionRules.STRING:
 				return;
 			case TransformConstants.IngestionRules.DATE:
 				boolean isDateValid = GenericValidator.isDate(propertyValue, "MM/dd/yyyy", true);
