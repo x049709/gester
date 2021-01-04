@@ -88,6 +88,50 @@ output application/json
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
 		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="5857670d-8ee5-41d6-8826-3b8322721545" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var empList = [
+{
+	"empID": 100,
+	"empName": "Chinna",
+	"empStatus": "A"
+},
+{
+	"empID": 100,
+	"empName": "Chinna",
+	"empStatus": "A"
+},
+	{
+	"empID": 101,
+	"empName": "Mark",
+	"empStatus": "I"
+},
+	{
+	"empID": 103,
+	"empName": "John",
+	"empStatus": "I"
+},
+	{
+	"empID": 102,
+	"empName": "Stephen",
+	"empStatus": "A"
+}
+]
+---
+//iterate over an array of objects
+// map will iterate over the array empList
+// $$ represent the object's index 
+// $ represent the current object
+payload map {
+	($$): $
+}
+
+
+	]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<ee:transform doc:name="Transform Message" doc:id="dabccbac-0b49-49dd-9a56-8a24c26b6850" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -152,7 +196,7 @@ payload map (generic_in, indexOfGenericIn) ->
 			</ee:message>
 		</ee:transform>
 		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
-		<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncoming(java.util.ArrayList)" target="bulkTransformedIncoming">
+		<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncomingArrayList(java.util.ArrayList)" target="bulkTransformedIncoming">
 			<java:args ><![CDATA[#[output application/java
 ---
 {

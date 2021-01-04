@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mycompany</groupId>
-	<artifactId>ingester-server-v30</artifactId>
+	<artifactId>eta-ingester-server</artifactId>
 	<version>1.0.1-server-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 

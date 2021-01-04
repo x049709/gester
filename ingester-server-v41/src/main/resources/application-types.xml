@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="loc-incoming-csv" format="csv">
+      <types:shape format="weave" example="examples/loc_incoming.csv"><![CDATA[%dw 2.0
+
+type loc_incoming_csv = Array<{|  "﻿LOC": String,   LOCN_NAME: String,   HIERARCHY: String,   U_LOCATIONID: String,   U_LOCN_TYP_CODE: String,   U_DIVISION: String,   U_NATIONLOCATIONID: String,   U_NATIONDESCRIPTION: String,   U_REGIONDESCRIPTION: String,   U_REGIONID: String,   U_DISTRICTDESCRIPTION: String,   U_DISTRICTID: String,   U_PROFILE_DESIGNATION: String,   U_GROUPDESC_ETHNICITY: String,   U_GROUPDESC_CORP_VOLUME_GROUP: String,   "U_GROUPDESC_BACK TO SCHOOL": String,   U_GROUPDESC_TOURIST: String,   U_GROUPDESC_COLD_SUMMER: String,   U_OPEN_DATE: String,   U_CLOSE_DATE: String,   U_GROUPDESC_BEST_BETTER_GOOD: String,   U_BEST_MALLS: String,   U_CER_STORE: String,   U_CITY: String,   U_GROUPDESC_CLIMATE: String,   U_GROUPDESC_EXTREME_GROWTH_STRATEGY: String,   U_GROUPDESC_FLAGSHIP: String,   U_GROUPDESC_LATIN_STRATEGY: String,   U_LATITUDE: String,   U_LONGITUDE: String,   U_GROUPDESC_LIFESTYLE: String,   U_GROUPDESC_SMALL_STORE_PILOT: String,   U_GROUPDESC_SOUTHERN_LIVING: String,   U_STATE: String,   U_STATE_NAME: String,   U_SUPER_REGION: String,   U_GROUPDESC_WARM_WEATHER_STRATEGY: String,   U_ZIP_CODE: String,   U_GROUPDESC_COMPETITOR: String,   U_GROUPDESC_UNIVERSITY: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="loc-incoming-json" format="json">
+      <types:shape format="weave" example="examples/loc_incoming.json"><![CDATA[%dw 2.0
+
+type loc_incoming_json = {|
+  LOC: String, 
+  LOCN_NAME: String, 
+  HIERARCHY: Number {"typeId": "int"}, 
+  U_LOCATIONID: Number {"typeId": "int"}, 
+  U_LOCN_TYP_CODE: String, 
+  U_DIVISION: Number {"typeId": "int"}, 
+  U_NATIONLOCATIONID: String, 
+  U_NATIONDESCRIPTION: String, 
+  U_REGIONDESCRIPTION: String, 
+  U_REGIONID: String, 
+  U_DISTRICTDESCRIPTION: String, 
+  U_DISTRICTID: String, 
+  U_PROFILE_DESIGNATION: String, 
+  U_GROUPDESC_ETHNICITY: String, 
+  U_GROUPDESC_CORP_VOLUME_GROUP: String, 
+  U_GROUPDESC_BACK_TO_SCHOOL: String, 
+  U_GROUPDESC_TOURIST: String, 
+  U_GROUPDESC_COLD_SUMMER: String, 
+  U_OPEN_DATE: String, 
+  U_CLOSE_DATE: String, 
+  U_GROUPDESC_BEST_BETTER_GOOD: String, 
+  U_BEST_MALLS: String, 
+  U_CER_STORE: String, 
+  U_CITY: String, 
+  U_GROUPDESC_CLIMATE: String, 
+  U_GROUPDESC_EXTREME_GROWTH_STRATEGY: String, 
+  U_GROUPDESC_FLAGSHIP: String, 
+  U_GROUPDESC_LATIN_STRATEGY: String, 
+  U_LATITUDE: String, 
+  U_LONGITUDE: String, 
+  U_GROUPDESC_LIFESTYLE: String, 
+  U_GROUPDESC_SMALL_STORE_PILOT: String, 
+  U_GROUPDESC_SOUTHERN_LIVING: String, 
+  U_STATE: String, 
+  U_STATE_NAME: String, 
+  U_SUPER_REGION: String, 
+  U_GROUPDESC_WARM_WEATHER_STRATEGY: String, 
+  U_ZIP_CODE: String, 
+  U_GROUPDESC_COMPETITOR: String, 
+  U_GROUPDESC_UNIVERSITY: String
+|} {"example": "{\\\"LOC\\\":\\\"01\\\",\\\"LOCN_NAME\\\":\\\"Peachtree\\\",\\\"HIERARCHY\\\":1,\\\"U_LOCATIONID\\\":12345,\\\"U_LOCN_TYP_CODE\\\":\\\"Store\\\",\\\"U_DIVISION\\\":71,\\\"U_NATIONLOCATIONID\\\":\\\"01\\\",\\\"U_NATIONDESCRIPTION\\\":\\\"01\\\",\\\"U_REGIONDESCRIPTION\\\":\\\"Region One\\\",\\\"U_REGIONID\\\":\\\"R1\\\",\\\"U_DISTRICTDESCRIPTION\\\":\\\"District One\\\",\\\"U_DISTRICTID\\\":\\\"D1\\\",\\\"U_PROFILE_DESIGNATION\\\":\\\"Prof One\\\",\\\"U_GROUPDESC_ETHNICITY\\\":\\\"Ethnic One\\\",\\\"U_GROUPDESC_CORP_VOLUME_GROUP\\\":\\\"Vol One\\\",\\\"U_GROUPDESC_BACK_TO_SCHOOL\\\":\\\"BTS One\\\",\\\"U_GROUPDESC_TOURIST\\\":\\\"Tourist One\\\",\\\"U_GROUPDESC_COLD_SUMMER\\\":\\\"CS One\\\",\\\"U_OPEN_DATE\\\":\\\"1\\/1\\/2010\\\",\\\"U_CLOSE_DATE\\\":\\\"1\\/1\\/9999\\\",\\\"U_GROUPDESC_BEST_BETTER_GOOD\\\":\\\"BBG One\\\",\\\"U_BEST_MALLS\\\":\\\"BM One\\\",\\\"U_CER_STORE\\\":\\\"Cer One\\\",\\\"U_CITY\\\":\\\"Atlamta\\\",\\\"U_GROUPDESC_CLIMATE\\\":\\\"Warm\\\",\\\"U_GROUPDESC_EXTREME_GROWTH_STRATEGY\\\":\\\"None\\\",\\\"U_GROUPDESC_FLAGSHIP\\\":\\\"No\\\",\\\"U_GROUPDESC_LATIN_STRATEGY\\\":\\\"None\\\",\\\"U_LATITUDE\\\":\\\"01.222\\\",\\\"U_LONGITUDE\\\":\\\"03.233\\\",\\\"U_GROUPDESC_LIFESTYLE\\\":\\\"None\\\",\\\"U_GROUPDESC_SMALL_STORE_PILOT\\\":\\\"None\\\",\\\"U_GROUPDESC_SOUTHERN_LIVING\\\":\\\"None\\\",\\\"U_STATE\\\":\\\"GA\\\",\\\"U_STATE_NAME\\\":\\\"Georgia\\\",\\\"U_SUPER_REGION\\\":\\\"SE\\\",\\\"U_GROUPDESC_WARM_WEATHER_STRATEGY\\\":\\\"None\\\",\\\"U_ZIP_CODE\\\":\\\"10004-2345\\\",\\\"U_GROUPDESC_COMPETITOR\\\":\\\"None\\\",\\\"U_GROUPDESC_UNIVERSITY\\\":\\\"None\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="loc-incoming-array" format="json">
+      <types:shape format="weave" example="examples/loc_incoming_array.json"><![CDATA[%dw 2.0
+
+type loc_incoming_array = Array<{|  LOC: String,   LOCN_NAME: String,   HIERARCHY: Number {"typeId": "int"},   U_LOCATIONID: Number {"typeId": "int"},   U_LOCN_TYP_CODE: String,   U_DIVISION: Number {"typeId": "int"},   U_NATIONLOCATIONID: String,   U_NATIONDESCRIPTION: String,   U_REGIONDESCRIPTION: String,   U_REGIONID: String,   U_DISTRICTDESCRIPTION: String,   U_DISTRICTID: String,   U_PROFILE_DESIGNATION: String,   U_GROUPDESC_ETHNICITY: String,   U_GROUPDESC_CORP_VOLUME_GROUP: String,   U_GROUPDESC_BACK_TO_SCHOOL: String,   U_GROUPDESC_TOURIST: String,   U_GROUPDESC_COLD_SUMMER: String,   U_OPEN_DATE: String,   U_CLOSE_DATE: String,   U_GROUPDESC_BEST_BETTER_GOOD: String,   U_BEST_MALLS: String,   U_CER_STORE: String,   U_CITY: String,   U_GROUPDESC_CLIMATE: String,   U_GROUPDESC_EXTREME_GROWTH_STRATEGY: String,   U_GROUPDESC_FLAGSHIP: String,   U_GROUPDESC_LATIN_STRATEGY: String,   U_LATITUDE: String,   U_LONGITUDE: String,   U_GROUPDESC_LIFESTYLE: String,   U_GROUPDESC_SMALL_STORE_PILOT: String,   U_GROUPDESC_SOUTHERN_LIVING: String,   U_STATE: String,   U_STATE_NAME: String,   U_SUPER_REGION: String,   U_GROUPDESC_WARM_WEATHER_STRATEGY: String,   U_ZIP_CODE: String,   U_GROUPDESC_COMPETITOR: String,   U_GROUPDESC_UNIVERSITY: String|}> {"example": "[{\\\"LOC\\\":\\\"01\\\",\\\"LOCN_NAME\\\":\\\"Peachtree\\\",\\\"HIERARCHY\\\":1,\\\"U_LOCATIONID\\\":12345,\\\"U_LOCN_TYP_CODE\\\":\\\"Store\\\",\\\"U_DIVISION\\\":71,\\\"U_NATIONLOCATIONID\\\":\\\"01\\\",\\\"U_NATIONDESCRIPTION\\\":\\\"01\\\",\\\"U_REGIONDESCRIPTION\\\":\\\"Region One\\\",\\\"U_REGIONID\\\":\\\"R1\\\",\\\"U_DISTRICTDESCRIPTION\\\":\\\"District One\\\",\\\"U_DISTRICTID\\\":\\\"D1\\\",\\\"U_PROFILE_DESIGNATION\\\":\\\"Prof One\\\",\\\"U_GROUPDESC_ETHNICITY\\\":\\\"Ethnic One\\\",\\\"U_GROUPDESC_CORP_VOLUME_GROUP\\\":\\\"Vol One\\\",\\\"U_GROUPDESC_BACK_TO_SCHOOL\\\":\\\"BTS One\\\",\\\"U_GROUPDESC_TOURIST\\\":\\\"Tourist One\\\",\\\"U_GROUPDESC_COLD_SUMMER\\\":\\\"CS One\\\",\\\"U_OPEN_DATE\\\":\\\"1\\/1\\/2010\\\",\\\"U_CLOSE_DATE\\\":\\\"1\\/1\\/9999\\\",\\\"U_GROUPDESC_BEST_BETTER_GOOD\\\":\\\"BBG One\\\",\\\"U_BEST_MALLS\\\":\\\"BM One\\\",\\\"U_CER_STORE\\\":\\\"Cer One\\\",\\\"U_CITY\\\":\\\"Atlamta\\\",\\\"U_GROUPDESC_CLIMATE\\\":\\\"Warm\\\",\\\"U_GROUPDESC_EXTREME_GROWTH_STRATEGY\\\":\\\"None\\\",\\\"U_GROUPDESC_FLAGSHIP\\\":\\\"No\\\",\\\"U_GROUPDESC_LATIN_STRATEGY\\\":\\\"None\\\",\\\"U_LATITUDE\\\":\\\"01.222\\\",\\\"U_LONGITUDE\\\":\\\"03.233\\\",\\\"U_GROUPDESC_LIFESTYLE\\\":\\\"None\\\",\\\"U_GROUPDESC_SMALL_STORE_PILOT\\\":\\\"None\\\",\\\"U_GROUPDESC_SOUTHERN_LIVING\\\":\\\"None\\\",\\\"U_STATE\\\":\\\"GA\\\",\\\"U_STATE_NAME\\\":\\\"Georgia\\\",\\\"U_SUPER_REGION\\\":\\\"SE\\\",\\\"U_GROUPDESC_WARM_WEATHER_STRATEGY\\\":\\\"None\\\",\\\"U_ZIP_CODE\\\":\\\"10004-2345\\\",\\\"U_GROUPDESC_COMPETITOR\\\":\\\"None\\\",\\\"U_GROUPDESC_UNIVERSITY\\\":\\\"None\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="loc-incoming-java" format="java">
+      <types:shape format="java" element="com.ingester.beans.LocIncoming"/>
+    </types:type>
+    <types:type name="loc-incoming-objects" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="LocIncoming" format="java">
+      <types:shape format="java" element="com.ingester.beans.LocIncoming"/>
+    </types:type>
+  </types:catalog>
+</types:mule>

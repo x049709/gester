@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="484ad50d-dd1c-4d7c-a996-62b397c25dec" basePath="emp-sapi" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config_In" doc:name="File Config" doc:id="7141f471-c9c9-4591-90fa-2b50be16e9f8" >
+		<file:connection workingDir="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in" />
+	</file:config>
+	<file:config name="File_Config_Failures" doc:name="File Config" doc:id="0bd464e0-2c23-4cca-88b3-f248601bf396" >
+		<file:connection workingDir="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_failures" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_Ingester_config" doc:name="HTTP Listener config" doc:id="8002393d-853c-4ebf-a85b-5eb19ca0152e" basePath="ingester" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<db:config name="AzureSQLConfig" doc:name="Database Config" doc:id="9219ec95-790a-47bc-8718-0c519dfe009c" >
+		<db:generic-connection url="${database.url}" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="33602c1f-8833-4ff5-b252-d0008a4193c1" file="${env}.yaml" />
+	<flow name="ingester-main-flow" doc:id="53c21ad3-8085-43f2-8f85-98098ea7cdd4" >
+		<http:listener doc:name="Listener" doc:id="9852c75d-bac5-43a5-9551-ee2f552f1eaa" config-ref="HTTP_Listener_Ingester_config" path="main" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4ea28d9a-2f19-4def-99e5-5d9a43565e9d" message='ETA-INGESTER STARTING LOAD....  #["\n"] '/>
+		<set-variable value="#[attributes.queryParams.targetEntity]" doc:name="Set Variable" doc:id="697d6890-f1a5-4b1e-a9d7-3f145a620d6f" variableName="targetEntity" />
+		<set-variable value="${database.sql.schema}" doc:name="Set Variable" doc:id="64788e1d-d52b-49b5-bb99-e109e36dbe2d" variableName="dbSchema"/>
+		<java:invoke-static doc:name="Load parameter list" doc:id="eecb847d-742c-45fb-9c83-5c0672ce87e9" class="com.ingester.loaders.ParameterLoader" method="LoadParameterList(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">
+			<java:args><![CDATA[#[output application/java
+---
+{
+	sourceTypeIn: attributes.queryParams.sourceType,
+	sourceEntityIn: attributes.queryParams.sourceEntity,
+	targetSysIn: attributes.queryParams.targetSys,
+	targetEntityIn: attributes.queryParams.targetEntity
+}]]]></java:args>
+		</java:invoke-static>
+		<flow-ref doc:name="load-mapping-sheet-flow" doc:id="c1b0ac78-64a1-48c6-80bb-69250571a0c4" name="load-mapping-sheet"/>
+		<flow-ref doc:name="load-reference-data-flow" doc:id="35c4a353-8464-4428-82ea-438540a653bf" name="load-reference-data"/>
+		<java:new doc:name="new-splitter" doc:id="24f4ef1c-27ff-4f77-a5c7-2003f05c0b61" class="com.ingester.transformers.GenericRecordSplitter" constructor="GenericRecordSplitter()" target="genericValidatorInstance">
+		</java:new>
+		<java:new doc:name="new-bulk-transformer" doc:id="bf0d8b27-88a5-40bf-b136-e50b3ed94afa" class="com.ingester.transformers.BulkGenericTransformer" constructor="BulkGenericTransformer()" target="bulkGenericTransformerInstance"/>
+		<flow-ref doc:name="load-incoming-records-flow" doc:id="fe2cc247-e54e-4b02-96f5-a9b64462a3a4" name="load-incoming-data"/>
+		<ee:transform doc:name="Transform Message" doc:id="0746ca50-1f5e-4555-81b2-88abfcd9b3ba" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "success",
+	"code": 200
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="load-mapping-sheet" doc:id="2d5f0b14-d308-4094-a501-415a07ad86bd" >
+		<db:select doc:name="select-mapping-sheet" doc:id="6ffaae11-5225-4009-92f7-8f04d511d353" config-ref="AzureSQLConfig">
+			<db:sql><![CDATA[${database.sql.select.mapping-sheet}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"targetEntity": vars.targetEntity
+}]]]></db:input-parameters>
+		</db:select>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="d3ffbd5c-8e05-4ea0-b695-795dfe2c972c" variableName="arrayListMappingSheet" />
+		<java:invoke-static doc:name="load-ArrayList-mapping-sheet" doc:id="59e698cc-0388-4a01-84c6-ddcec6b429c8" class="com.ingester.loaders.StaticMappingSheetLoader" method="LoadMappingSheet(java.util.ArrayList)" target="dbInsertSQL">
+			<java:args><![CDATA[#[{
+	referenceDataArrayListIn: vars.arrayListMappingSheet
+}]]]></java:args>
+		</java:invoke-static>
+		<java:invoke-static doc:name="get-DBInsertSQL-string" doc:id="6424b888-da3f-41a5-a3f0-af0853c2e2f7" class="com.ingester.loaders.StaticMappingSheetLoader" method="GetDBInsertSQL(java.lang.String)" target="dbInsertSQL">
+			<java:args ><![CDATA[#[{
+	schema: vars.dbSchema
+}]]]></java:args>
+		</java:invoke-static>
+	</sub-flow>
+	<sub-flow name="load-reference-data" doc:id="8a588923-4ab1-44d2-bdf2-e90dab18149f" >
+		<db:select doc:name="select-reference-data" doc:id="0e443da5-7c9a-4965-a5c8-fb627db2822b" config-ref="AzureSQLConfig">
+			<db:sql><![CDATA[${database.sql.select.ref-data}]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"targetEntity": vars.targetEntity
+}]]]></db:input-parameters>
+		</db:select>
+		<java:invoke-static doc:name="load-reference-data" doc:id="9d80697c-a22a-4899-bc5c-73388b07a40a" class="com.ingester.loaders.StaticReferenceDataLoader" method="loadReferenceDataArrayList(java.util.ArrayList)">
+			<java:args><![CDATA[#[output application/java
+---
+{
+	referenceDataArrayListIn: payload
+}]]]></java:args>
+		</java:invoke-static>
+	</sub-flow>
+	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
+		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data_w_source_cols.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="dabccbac-0b49-49dd-9a56-8a24c26b6850" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map {
+	($$): $
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value='#[attributes.fileName ++ "." ++ now() as String {format: "yyyy-MM-dd-hh-mm-ss-SSS"}]' doc:name="Set Variable" doc:id="c9b3d0c2-eee4-499e-be77-b3bb683f72c3" variableName="inputFileName"/>
+		<java:invoke doc:name="validate-and-transform-bulk-records" doc:id="60757721-29d2-4a38-9266-14ba90a05163" instance="#[vars.bulkGenericTransformerInstance]" class="com.ingester.transformers.BulkGenericTransformer" method="transformIncoming(java.util.ArrayList)">
+			<java:args ><![CDATA[#[output application/java
+---
+{
+	incomingDataArrayListIn: payload
+}]]]></java:args>
+		</java:invoke>
+		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="3">
+			<batch:process-records >
+				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" acceptPolicy="ALL">
+					<batch:aggregator doc:name="process-aggregated-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
+						<try doc:name="Try" doc:id="ce41634f-8cdb-4a9b-88eb-d256c9d6b8db" transactionalAction="ALWAYS_BEGIN">
+							<db:bulk-insert doc:name="insert-aggregated-transformed-records" doc:id="a48fc5a9-8f3e-44b9-8f3d-75c6e634ff19" config-ref="AzureSQLConfig" >
+								<db:sql ><![CDATA[#[vars.dbInsertSQL]]]></db:sql>
+							</db:bulk-insert>
+							<error-handler >
+								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
+									<set-variable value="#[error.detailedDescription]" doc:name="Set Variable" doc:id="27d12c89-a51f-4815-99d5-b6a486d3c724" variableName="dbError" />
+									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map(genericFailure, indexOfGenericFailures) ->
+{
+	inFieldSeq: genericFailure.inFieldSeq,
+	inFieldException: vars.dbError,
+	inFieldMsg: payload.inFieldMsg,
+	inField001: genericFailure.inField001,
+	inField002: genericFailure.inField002,
+	inField003: genericFailure.inField003,
+	inField004: genericFailure.inField004
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+									<file:write doc:name="Write" doc:id="c79026a6-2b2f-4578-b8c3-6434e3d85549" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ ".dberrors.json"]' mode="APPEND"/>
+								</on-error-propagate>
+							</error-handler>
+						</try>
+					</batch:aggregator>
+					<try doc:name="Try" doc:id="b720bc35-1bd6-4f7a-99a5-c897c51374e1" >
+						<java:invoke doc:name="separate-good-from-bad" doc:id="7584d6eb-991b-47f1-8408-29605b417655" instance="#[vars.genericValidatorInstance]" class="com.ingester.transformers.GenericRecordSplitter" target="transformedIncoming" method="transformIncoming(com.ingester.beans.IngesterIncomingPayload)">
+						<java:args><![CDATA[#[output application/java
+---
+{
+	incomingPayload: payload
+}]]]></java:args>
+					</java:invoke>
+						<error-handler >
+							<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-transform-errors-to-disk" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
+								<set-variable value="#[error.description]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
+								<ee:transform doc:name="Transform Message" doc:id="826b9077-719a-44ce-ac13-1c0b778c426d" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	inFieldSeq: payload.inFieldSeq,
+	inFieldException: vars.transformError,
+	inFieldMsg: payload.inFieldMsg,
+	inField001: payload.inField001,
+	inField002: payload.inField002,
+	inField003: payload.inField003,
+	inField004: payload.inField004
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<file:write doc:name="Write" doc:id="9de947d2-17d4-48f3-bd14-c35ff3d8349c" config-ref="File_Config_Failures" path='#[vars.inputFileName ++ ".transformerrors.json"]' mode="APPEND"/>
+							</on-error-propagate>
+						</error-handler>
+					</try>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+</mule>
