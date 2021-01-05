@@ -39,27 +39,10 @@ public class BulkGenericTransformer {
 				//System.out.println("Raw row from inbound: " + entry.getKey() + "=" + entry.getValue());
 				Map<String, String> rowZero = (Map<String, String>) entry.getValue();
 				//System.out.println("Row zero: " + rowZero.toString());
-				ingesterPayload = new IngesterIncomingPayload();
-
-				//Convert the incoming hashmap record into a JavaBean, starting with the sequence and msg
-				String inFieldMsgValue = "NONE";
-				ingesterPayload.setInFieldSeq(recordSeq);
-				ingesterPayload.setInFieldMsg(inFieldMsgValue);
 				
-				//Convert the rest of the fields
-				for (Map.Entry actualColumnMappingFromInbound : rowZero.entrySet()) {
-					//System.out.println("Actual key=value from inbound: " + actualColumnMappingFromInbound.getKey() + "=" + actualColumnMappingFromInbound.getValue());
-					String sourceColumn = (String)actualColumnMappingFromInbound.getKey();
-					
-					try {
-						MappingSheet mapSheetForFieldUsingColumn = this.mapSheetUsingSourceColumnFromSingleton.get(sourceColumn);
-						String genericColumn = mapSheetForFieldUsingColumn.getGENERIC_COL_NAME();
-						String sourceValue = (String)actualColumnMappingFromInbound.getValue();
-						this.vUtils.setStringProperty(genericColumn, sourceValue, ingesterPayload);
-					} catch (Exception e) {
-						ingesterPayload.setInFieldMsg("NOTMAPPED");
-					}		
-				}
+				//Convert the incoming hashmap record into a JavaBean, starting with the sequence and msg
+				ingesterPayload = this.convertIncomingHashMapToJavaBean(recordSeq, rowZero);
+
 				//System.out.println("Converted row from inbound: " + ingesterPayload.toString());
 				
 				//Validate/transform all other fields in the incoming message, using the mapping sheet to drive the flow
@@ -90,6 +73,30 @@ public class BulkGenericTransformer {
 	
 	}
 		
+	private IngesterIncomingPayload convertIncomingHashMapToJavaBean(int recordSeq, Map<String, String> rowZero) {
+		IngesterIncomingPayload ingesterPayload = new IngesterIncomingPayload();	
+		String inFieldMsgValue = "NONE";
+		ingesterPayload.setInFieldSeq(recordSeq);
+		ingesterPayload.setInFieldMsg(inFieldMsgValue);
+		
+		//Convert the rest of the fields
+		for (Map.Entry actualColumnMappingFromInbound : rowZero.entrySet()) {
+			//System.out.println("Actual key=value from inbound: " + actualColumnMappingFromInbound.getKey() + "=" + actualColumnMappingFromInbound.getValue());
+			String sourceColumn = (String)actualColumnMappingFromInbound.getKey();
+			
+			try {
+				MappingSheet mapSheetForFieldUsingSourceColumn = this.mapSheetUsingSourceColumnFromSingleton.get(sourceColumn);
+				String genericColumn = mapSheetForFieldUsingSourceColumn.getGENERIC_COL_NAME();
+				String sourceValue = (String)actualColumnMappingFromInbound.getValue();
+				this.vUtils.setStringProperty(genericColumn, sourceValue, ingesterPayload);
+			} catch (Exception e) {
+				ingesterPayload.setInFieldMsg("NOTMAPPED");
+			}		
+		}
+
+		return ingesterPayload;
+	}
+
 	private void transformOneIncomingField(
 			IngesterIncomingPayload ingesterIncoming, 
 			String genericPropertyName, 

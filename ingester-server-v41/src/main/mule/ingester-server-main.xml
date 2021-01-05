@@ -57,6 +57,11 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ecd7107e-a1ea-4be8-bd21-24ccd4ac41d9" type="ANY">
+				<logger level="INFO" doc:name="Logger" doc:id="89fd7764-cd13-4c38-94dc-3b98d66be273" />
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<sub-flow name="load-mapping-sheet" doc:id="2d5f0b14-d308-4094-a501-415a07ad86bd" >
 		<db:select doc:name="select-mapping-sheet" doc:id="6ffaae11-5225-4009-92f7-8f04d511d353" config-ref="AzureSQLConfig">
@@ -93,7 +98,7 @@ output application/json
 		</java:invoke-static>
 	</sub-flow>
 	<flow name="load-incoming-data" doc:id="28630d1f-8ff3-4138-9714-a67a3e44596d" >
-		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data_w_source_cols.csv"/>
+		<file:read doc:name="read-incoming-data" doc:id="3dd59d71-87f4-4737-b2e5-3bc6e8c8aea4" config-ref="File_Config_In" path="/Users/x049709/Documentos/Ingester Project Files/testfiles/file_in/loc_generic_incoming_invalid_data_w_source_cols_large.csv"/>
 		<ee:transform doc:name="Transform Message" doc:id="dabccbac-0b49-49dd-9a56-8a24c26b6850" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -113,7 +118,7 @@ payload map {
 	incomingDataArrayListIn: payload
 }]]]></java:args>
 		</java:invoke>
-		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" blockSize="3">
+		<batch:job jobName="process-incoming" doc:id="45f340e4-9ec8-4137-8b92-8bf22d9237c9" maxFailedRecords="1000">
 			<batch:process-records >
 				<batch:step name="transform-incoming" doc:id="1fbf57bc-7309-4db3-89bb-be8555cc048d" acceptPolicy="ALL">
 					<batch:aggregator doc:name="process-aggregated-batch" doc:id="253cd3bc-4a29-499d-a3d8-108139005285" size="500">
@@ -122,7 +127,7 @@ payload map {
 								<db:sql ><![CDATA[#[vars.dbInsertSQL]]]></db:sql>
 							</db:bulk-insert>
 							<error-handler >
-								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" >
+								<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-batch-errors-to-disk" doc:id="300e1958-c355-4933-b561-e3a7fb0e4d69" type="ANY">
 									<set-variable value="#[error.detailedDescription]" doc:name="Set Variable" doc:id="27d12c89-a51f-4815-99d5-b6a486d3c724" variableName="dbError" />
 									<ee:transform doc:name="Transform Message" doc:id="6167e07a-1156-482a-b6bb-fddb9838024a">
 										<ee:message>
@@ -155,7 +160,7 @@ payload map(genericFailure, indexOfGenericFailures) ->
 }]]]></java:args>
 					</java:invoke>
 						<error-handler >
-							<on-error-propagate enableNotifications="true" logException="true" doc:name="propagate-transform-errors-to-disk" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" >
+							<on-error-propagate enableNotifications="true" logException="false" doc:name="propagate-transform-errors-to-disk" doc:id="c4114bd1-1c89-499b-80a3-8a7787a3ef8f" type="ANY">
 								<set-variable value="#[error.description]" doc:name="Set Variable" doc:id="70e9aa8f-dbf5-479c-b465-154159bae039" variableName="transformError" />
 								<ee:transform doc:name="Transform Message" doc:id="826b9077-719a-44ce-ac13-1c0b778c426d" >
 									<ee:message >
